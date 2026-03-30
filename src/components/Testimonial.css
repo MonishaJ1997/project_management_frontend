@@ -1,0 +1,155 @@
+/* SECTION */
+.testimonial-section {
+  position: relative;
+  padding: 100px 20px;
+  text-align: center;
+
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  overflow: hidden;
+}
+
+/* ✨ soft glow background */
+.testimonial-section::before {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: #6366f1;
+  filter: blur(120px);
+  top: -100px;
+  left: -100px;
+  opacity: 0.2;
+}
+
+.testimonial-section::after {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: #ec4899;
+  filter: blur(120px);
+  bottom: -100px;
+  right: -100px;
+  opacity: 0.2;
+}
+
+/* TITLE */
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 50px;
+  color: #111827;
+}
+
+/* CONTAINER */
+.testimonial-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-bottom: 80px;
+  position: relative;
+  z-index: 1;
+}
+
+/* CARD */
+.testimonial-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(14px);
+
+  padding: 28px;
+  border-radius: 18px;
+  width: 320px;
+  text-align: left;
+
+  border: 1px solid rgba(255,255,255,0.4);
+
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+/* USER TOP */
+.top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.top img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #6366f1;
+}
+
+.top h4 {
+  font-size: 16px;
+  margin: 0;
+  color: #111827;
+}
+
+.top span {
+  font-size: 14px;
+  color: #f59e0b;
+}
+
+/* TEXT */
+.testimonial-card p {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* CTA */
+.cta {
+  position: relative;
+  z-index: 1;
+}
+
+.cta h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: #111827;
+}
+
+.cta p {
+  color: #6b7280;
+  margin-bottom: 25px;
+}
+
+/* BUTTONS */
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+/* modern buttons */
+.primary {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+  transition: 0.3s;
+}
+
+.primary:hover {
+  transform: translateY(-2px);
+}
+
+.secondary {
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid #e5e7eb;
+  padding: 12px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+}

@@ -1,0 +1,1251 @@
+/* BODY */
+body {
+  margin: 0;
+ 
+  background: #f8fafc;
+}
+
+/* LAYOUT */
+.dashboard {
+  display: flex;
+  height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  background: #0f172a;
+  color: white;
+  padding: 20px;
+
+}
+
+.sidebar h2 {
+  margin-bottom: 30px;
+  font-size: 28px;
+}
+
+.sidebar button {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.sidebar button:hover {
+  background: #1e293b;
+  color: white;
+}
+
+/* MAIN */
+.content {
+  flex: 1;
+  padding: 25px;
+  overflow-y: auto;
+}
+
+/* TOPBAR */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.topbar h2 {
+  font-size: 22px;
+  color: #0f172a;
+}
+
+/* BUTTON */
+.primary {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.primary:hover {
+  background: #4f46e5;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* CARD BASE */
+.card {
+  background: white;
+  padding: 18px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+/* COLORED STATS CARDS (LIKE IMAGE 🔥) */
+.card:nth-child(1) {
+  background: #3b82f6;
+  color: white;
+}
+.card:nth-child(2) {
+  background: #10b981;
+  color: white;
+}
+.card:nth-child(3) {
+  background: #f59e0b;
+  color: white;
+}
+.card:nth-child(4) {
+  background: #6366f1;
+  color: white;
+}
+
+.card p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.card h2 {
+  margin: 8px 0 0;
+  font-size: 26px;
+}
+
+/* CHART BOX */
+.chart {
+  grid-column: span 2;
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.chart h4 {
+  margin-bottom: 10px;
+  color: #0f172a;
+}
+
+/* KANBAN */
+.kanban {
+  display: flex;
+  gap: 20px;
+}
+
+/* COLUMN */
+.column {
+  flex: 1;
+  background: #f1f5f9;
+  padding: 15px;
+  border-radius: 14px;
+}
+
+.column h4 {
+  margin-bottom: 12px;
+  color: #0f172a;
+}
+
+/* TASK CARD */
+.task {
+  background: white;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+}
+
+.task h5 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.task p {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* BADGES */
+.badge {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.badge.todo {
+  background: #fde68a;
+}
+
+.badge.in_progress {
+  background: #93c5fd;
+}
+
+.badge.done {
+  background: #86efac;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.box {
+  background: white;
+  padding: 25px;
+  width: 350px;
+  border-radius: 14px;
+}
+
+.box input,
+.box textarea,
+.box select {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-box {
+  width: 400px;
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.modal-header span {
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.modal-box input,
+.modal-box textarea,
+.modal-box select {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+@keyframes fadeIn {
+  from { transform: scale(0.9); opacity: 0 }
+  to { transform: scale(1); opacity: 1 }
+}
+
+
+/* PAGE */
+.tasks-page {
+  padding: 20px;
+}
+
+/* HEADER */
+.tasks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.tasks-header h2 {
+  font-size: 22px;
+}
+
+.filters button {
+  margin-right: 10px;
+  padding: 6px 12px;
+  border: none;
+  background: #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.filters button:hover {
+  background: #cbd5f5;
+}
+
+/* SEARCH */
+.tasks-header input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.projects-page {
+  padding: 20px;
+}
+
+.project-card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+}
+
+.project-card h3 {
+  margin-bottom: 5px;
+}
+
+.project-tasks {
+  margin-top: 15px;
+}
+
+.project-task {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.project-task h5 {
+  margin: 0;
+}
+
+.project-task p {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.project-task select {
+  padding: 6px;
+  border-radius: 6px;
+}
+/* TASK PAGE */
+.tasks-page {
+  padding: 20px;
+}
+
+/* HEADER */
+.tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.tasks-header h2 {
+  font-size: 22px;
+  color: #0f172a;
+}
+
+/* FILTERS */
+.filters button {
+  margin-right: 8px;
+  padding: 6px 12px;
+  border: none;
+  background: #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.filters button:hover {
+  background: #cbd5f5;
+}
+
+/* SEARCH */
+.tasks-header input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+
+
+
+
+
+.tasks-page {
+  padding: 20px;
+}
+
+/* HEADER */
+.tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.tasks-header h2 {
+  font-size: 24px;
+  color: #0f172a;
+}
+
+/* FILTERS */
+.filters button {
+  margin-right: 10px;
+  padding: 6px 14px;
+  border: none;
+  background: #e0e7ff;
+  color: #4338ca;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.3s;
+}
+
+.filters button:hover {
+  background: #6366f1;
+  color: white;
+}
+
+/* SEARCH */
+.tasks-header input {
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+}
+
+/* BOARD */
+.kanban {
+  display: flex;
+  gap: 20px;
+}
+
+/* COLUMN */
+.column {
+  flex: 1;
+  background: #f1f5f9;
+  padding: 15px;
+  border-radius: 16px;
+}
+
+/* HEADER */
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.column-header span {
+  background: #6366f1;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+/* TASK CARD */
+.task-card {
+  background: white;
+  padding: 15px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+  transition: 0.2s;
+}
+
+.task-card:hover {
+  transform: translateY(-4px);
+}
+
+/* TEXT */
+.task-card h5 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.task-card p {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* FOOTER */
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/* PRIORITY */
+.priority.low {
+  background: #bbf7d0;
+}
+.priority.medium {
+  background: #fde68a;
+}
+.priority.high {
+  background: #fecaca;
+}
+
+.priority {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* BUTTON */
+.status-btn {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.status-btn:hover {
+  background: #16a34a;
+}
+
+.task-actions button {
+  border: none;
+  padding: 5px 10px;
+  margin-left: 5px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* START */
+.start-btn {
+  background: #3b82f6;
+  color: white;
+}
+.start-btn:hover {
+  background: #2563eb;
+}
+
+/* DONE */
+.done-btn {
+  background: #22c55e;
+  color: white;
+}
+.done-btn:hover {
+  background: #16a34a;
+}
+
+/* BACK */
+.back-btn {
+  background: #f59e0b;
+  color: white;
+}
+.back-btn:hover {
+  background: #d97706;
+}
+
+
+/* project*/
+
+/* PAGE */
+.projects-page {
+  padding: 20px;
+}
+
+.page-title {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+/* GRID */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* CARD */
+.project-card {
+  background: white;
+  padding: 18px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  transition: 0.3s;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+}
+
+.project-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.project-card p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 5px 0 15px;
+}
+
+/* PROGRESS */
+.progress {
+  background: #e2e8f0;
+  height: 6px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #3b82f6);
+  border-radius: 10px;
+}
+
+/* FOOTER */
+.project-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+/* STATUS */
+.status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.status.active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* AVATARS */
+.avatars img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  margin-left: -8px;
+  border: 2px solid white;
+}
+
+/* PAGE TITLE */
+.page-title {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+/* REPORT GRID */
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* REPORT CARDS */
+.report-card {
+  background: white;
+  padding: 15px;
+  border-radius: 14px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+}
+
+.report-card h4 {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.report-card h2 {
+  margin: 5px 0 0;
+}
+
+/* CHART BOX */
+.chart-box {
+  grid-column: span 2;
+  background: white;
+  padding: 15px;
+  border-radius: 14px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+}
+
+/* TEAM */
+.team-grid {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.team-card {
+  background: white;
+  padding: 15px;
+  border-radius: 14px;
+  text-align: center;
+  width: 150px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+}
+
+.team-card img {
+  width: 70px;
+  border-radius: 50%;
+}
+
+.team-list {
+  background: white;
+  padding: 15px;
+  border-radius: 14px;
+}
+
+.team-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.active {
+  color: #22c55e;
+}
+/* BODY */
+
+/* LAYOUT */
+.dashboard {
+  display: flex;
+  height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #0f172a, #1e293b);
+  color: white;
+  padding: 20px;
+}
+
+.sidebar button {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.sidebar button:hover {
+  background: #6366f1;
+  color: white;
+}
+
+/* MAIN */
+.content {
+  flex: 1;
+  padding: 25px;
+  overflow-y: auto;
+}
+
+/* TOPBAR */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.topbar h2 {
+  font-size: 22px;
+  color: #0f172a;
+}
+
+/* BUTTON */
+.primary {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.primary:hover {
+   background: white;
+  color:#4f46e5;
+  border:2px solid #4f46e5;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* CARDS */
+.card {
+  padding: 20px;
+  border-radius: 16px;
+  color: white;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* 🔥 CORRECT COLORS */
+.card:nth-child(1) {
+  background: linear-gradient(135deg, #6366f1, #4f46e5); /* TOTAL */
+}
+.card:nth-child(2) {
+  background: linear-gradient(135deg, #f59e0b, #d97706); /* TODO */
+}
+.card:nth-child(3) {
+  background: linear-gradient(135deg, #3b82f6, #2563eb); /* PROGRESS */
+}
+.card:nth-child(4) {
+  background: linear-gradient(135deg, #22c55e, #16a34a); /* DONE */
+}
+
+.card p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.card h2 {
+  margin-top: 8px;
+  font-size: 26px;
+}
+
+/* CHART */
+.chart {
+  grid-column: span 2;
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+}
+
+/* TASK BOARD */
+.column {
+  flex: 1;
+  background: #f1f5f9;
+  padding: 15px;
+  border-radius: 16px;
+}
+
+.column-header span {
+  background: #6366f1;
+  color: white;
+}
+
+/* TASK CARD */
+.task-card {
+  background: white;
+  padding: 15px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  transition: 0.2s;
+}
+
+.task-card:hover {
+  transform: translateY(-4px);
+}
+
+/* PRIORITY COLORS */
+.priority.low {
+  background: #bbf7d0;
+}
+.priority.medium {
+  background: #fde68a;
+}
+.priority.high {
+  background: #fecaca;
+}
+
+/* PROJECTS */
+.project-card {
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  transition: 0.3s;
+  border-left: 5px solid #6366f1;
+}
+
+.project-card:nth-child(2) {
+  border-left-color: #22c55e;
+}
+.project-card:nth-child(3) {
+  border-left-color: #f59e0b;
+}
+
+.project-card:hover {
+  transform: translateY(-6px);
+}
+
+/* PROGRESS BAR */
+.progress {
+  background: #e2e8f0;
+  height: 8px;
+  border-radius: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #6366f1, #22c55e);
+}
+
+/* REPORT CARDS */
+.report-card {
+  border-radius: 14px;
+  padding: 15px;
+  color: white;
+}
+
+.report-card:nth-child(1) {
+  background: #6366f1;
+}
+.report-card:nth-child(2) {
+  background: #22c55e;
+}
+.report-card:nth-child(3) {
+  background: #3b82f6;
+}
+.report-card:nth-child(4) {
+  background: #f59e0b;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+.report-card h4{
+  color: white;
+}
+
+
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+
+  /* LAYOUT STACK */
+  .dashboard {
+    flex-direction: column;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    height: 100%;
+    z-index: 1000;
+    transition: 0.3s;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  /* CONTENT */
+  .content {
+    padding: 15px;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* GRID → 1 COLUMN */
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* CHART FULL WIDTH */
+  .chart {
+    grid-column: span 1;
+  }
+
+  /* KANBAN STACK */
+  .kanban {
+    flex-direction: column;
+  }
+
+  /* PROJECTS */
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* REPORTS */
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* TEAM */
+  .team-grid {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* TASK HEADER */
+  .tasks-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  /* FILTERS WRAP */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* SEARCH FULL WIDTH */
+  .tasks-header input {
+    width: 100%;
+  }
+
+  /* MENU BUTTON */
+  .menu-btn {
+    display: block;
+  }
+}
+
+
+/* ================= SMALL MOBILE ================= */
+@media (max-width: 480px) {
+
+  /* CARDS FULL WIDTH */
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card h2 {
+    font-size: 22px;
+  }
+
+  /* BUTTON SMALL */
+  .primary {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* SIDEBAR WIDTH */
+  .sidebar {
+    width: 220px;
+  }
+
+  /* TASK CARDS */
+  .task-card {
+    padding: 12px;
+  }
+
+  .project-card {
+    padding: 14px;
+  }
+
+  .report-card {
+    padding: 12px;
+  }
+}
+/* DEFAULT (LARGE SCREEN) */
+.menu-btn {
+  display: none; /* hidden on desktop */
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+
+  /* SHOW MENU BUTTON */
+  .menu-btn {
+    display: block; /* visible only on mobile */
+  }
+}
+/* MENU BUTTON */
+.menu-btn {
+  display: none; /* hidden on desktop */
+  font-size: 26px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #0f172a;
+}
+
+/* HOVER EFFECT */
+.menu-btn:hover {
+  color: #4f46e5;
+}
+
+/* MOBILE ONLY */
+@media (max-width: 768px) {
+  .menu-btn {
+    display: block;
+  }
+}
+/* OVERLAY */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+}
+
+/* SIDEBAR ABOVE OVERLAY */
+.sidebar {
+  z-index: 1000;
+}
+/* ================= TABLET / SMALL LAPTOP ================= */
+@media (max-width: 1024px) {
+
+  /* GRID → 2 COLUMNS */
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* CHART FULL WIDTH */
+  .chart {
+    grid-column: span 2;
+  }
+
+  /* TASK BOARD */
+  .kanban {
+    flex-wrap: wrap;
+  }
+
+  .column {
+    min-width: 48%;
+  }
+
+  /* PROJECTS */
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* REPORTS */
+  .reports-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.close-btn {
+  display: none; /* hidden on big screens */
+}
+@media (max-width: 768px) {
+  .close-btn {
+    display: block; /* visible only on small screens */
+    cursor: pointer;
+  }
+}
+@media (max-width: 992px) {
+
+  .kanban {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .column {
+    width: 100%;
+  }
+}
+.kanban {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+@media (max-width: 1024px) {
+  .kanban {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 992px) {
+  .kanban {
+    grid-template-columns: 1fr;
+  }
+
+  .column {
+    width: 100%;
+  }
+}
+@media (max-width: 768px) {
+
+  .kanban {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .column {
+    padding: 12px;
+  }
+
+  .task-card {
+    padding: 12px;
+  }
+
+  .task-footer {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+}
+@media (max-width: 992px) {
+
+  .kanban {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* ✅ adds spacing between columns */
+  }
+
+  .column {
+    width: 100%;       /* default full width */
+    flex: 1 1 100%;
+  }
+
+}
+.toast-popup {
+  position: fixed;
+  top: 20px;
+  right: 300px;
+  background: #4f46e5;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 6px;
+  z-index: 9999;
+  font-size: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}

@@ -1249,3 +1249,1128 @@ body {
   font-size: 14px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
+
+/* =========================================
+   SPRINT PAGE
+========================================= */
+
+.sprint-page {
+  padding: 20px;
+}
+
+.sprint-page h2 {
+  margin-bottom: 15px;
+}
+
+/* CREATE SPRINT */
+.create-sprint {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.create-sprint input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 250px;
+}
+
+.create-sprint button {
+  padding: 10px 16px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.create-sprint button:hover {
+  background: #4f46e5;
+}
+
+/* SPRINT LIST */
+.sprint-list {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.sprint-card {
+  padding: 15px;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  min-width: 180px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: 0.2s;
+}
+
+.sprint-card:hover {
+  transform: translateY(-3px);
+}
+
+.sprint-card.active {
+  border: 2px solid #6366f1;
+}
+
+.sprint-card h4 {
+  margin: 0;
+}
+
+.sprint-card p {
+  font-size: 12px;
+  color: gray;
+}
+
+/* TASK ASSIGN */
+.task-assign {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.assign-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.assign-card button {
+  padding: 5px 10px;
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.assign-card button:hover {
+  background: #16a34a;
+}
+
+/* SPRINT KANBAN BOARD */
+.sprint-page .kanban {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.sprint-page .column {
+  flex: 1;
+  background: #f3f4f6;
+  padding: 10px;
+  border-radius: 10px;
+  min-height: 250px;
+}
+
+.sprint-page .column h4 {
+  text-transform: uppercase;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+/* TASK CARD */
+.sprint-page .task-card {
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+
+/* HEADINGS */
+.sprint-page h3 {
+  margin: 15px 0 10px;
+}
+/* =========================================
+   SPRINT PAGE
+========================================= */
+
+.sprint-page {
+  padding: 20px;
+}
+
+.sprint-page h2 {
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+/* CREATE SPRINT */
+.create-sprint {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.create-sprint input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 250px;
+  outline: none;
+}
+
+.create-sprint button {
+  padding: 10px 16px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.create-sprint button:hover {
+  background: #4f46e5;
+}
+
+/* SPRINT LIST */
+.sprint-list {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.sprint-card {
+  padding: 15px;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  min-width: 180px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: 0.2s;
+}
+
+.sprint-card:hover {
+  transform: translateY(-3px);
+}
+
+.sprint-card.active {
+  border: 2px solid #6366f1;
+}
+
+.sprint-card h4 {
+  margin: 0;
+}
+
+.sprint-card p {
+  font-size: 12px;
+  color: gray;
+}
+
+/* =========================================
+   TEAM SECTION
+========================================= */
+
+/* ================= TEAM SECTION (FIXED) ================= */
+
+.team-create {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* INPUT */
+.team-input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* DROPDOWN */
+.team-select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+}
+
+/* BUTTON */
+.team-btn {
+  padding: 8px 12px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.team-btn:hover {
+  background: #4f46e5;
+}
+
+/* TEAM LIST */
+.team-list {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+/* TEAM CARD */
+.team-avatar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  padding: 6px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* AVATAR CIRCLE */
+.avatar-circle {
+  width: 30px;
+  height: 30px;
+  background: #6366f1;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* NAME */
+.team-avatar span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ROLE */
+.team-avatar small {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.team-create button {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.team-create button:hover {
+  background: #4f46e5;
+}
+
+.team-list {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.team-chip {
+  background: #e0e7ff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* =========================================
+   TASK ASSIGN
+========================================= */
+
+.task-assign {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.assign-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.assign-card span {
+  font-size: 14px;
+}
+
+.assign-card select {
+  padding: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+/* =========================================
+   SPRINT BOARD (KANBAN)
+========================================= */
+
+.sprint-page .kanban {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.sprint-page .column {
+  flex: 1;
+  background: #f3f4f6;
+  padding: 10px;
+  border-radius: 10px;
+  min-height: 250px;
+}
+
+.sprint-page .column h4 {
+  text-transform: uppercase;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+/* TASK CARD */
+.sprint-page .task-card {
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+
+.sprint-page .task-card strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.sprint-page .task-card p {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* HEADINGS */
+.sprint-page h3 {
+  margin: 15px 0 10px;
+  font-weight: 600;
+}
+
+/* =========================================
+   SPRINT PAGE
+========================================= */
+.sprint-page {
+  padding: 20px;
+  background: #f9fafb;
+}
+
+.sprint-page h2 {
+  margin-bottom: 15px;
+}
+
+.sprint-page h3 {
+  margin: 20px 0 10px;
+}
+
+/* =========================================
+   CREATE SPRINT
+========================================= */
+.create-sprint {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.create-sprint input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.create-sprint button {
+  padding: 8px 12px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.create-sprint button:hover {
+  background: #4f46e5;
+}
+
+/* =========================================
+   SPRINT LIST
+========================================= */
+.sprint-list {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sprint-card {
+  background: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  width: 200px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: 0.2s;
+}
+
+.sprint-card:hover {
+  transform: translateY(-3px);
+}
+
+.sprint-card.active {
+  border: 2px solid #22c55e;
+}
+
+.sprint-card h4 {
+  margin: 0;
+}
+
+.sprint-card p {
+  font-size: 12px;
+  color: gray;
+}
+
+/* START BUTTON */
+.start-btn {
+  margin-top: 8px;
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* =========================================
+   TEAM SECTION
+========================================= */
+.team-create {
+  display: flex;
+  gap: 10px;
+}
+
+.team-create input {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.team-create button {
+  padding: 6px 10px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+
+
+
+
+
+/* =========================================
+   WORKLOAD
+========================================= */
+.workload {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.work-card {
+  background: #eef2ff;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 120px;
+  font-size: 13px;
+}
+
+/* =========================================
+   TASK ASSIGN
+========================================= */
+.task-assign {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.assign-card {
+  background: #ffffff;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #eee;
+}
+
+.assign-card select {
+  padding: 4px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* =========================================
+   KANBAN BOARD
+========================================= */
+.kanban {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.column {
+  flex: 1;
+  background: #f3f4f6;
+  padding: 10px;
+  border-radius: 10px;
+  min-height: 250px;
+}
+
+.column h4 {
+  text-transform: uppercase;
+  font-size: 12px;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+/* TASK CARD */
+.task-card {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  cursor: grab;
+}
+
+.task-card p {
+  font-size: 12px;
+  color: #666;
+}
+
+/* =========================================
+   BURNDOWN CHART
+========================================= */
+.recharts-wrapper {
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+
+
+
+
+
+
+
+
+/* ================= TEAM PAGE ================= */
+.team-page {
+  padding: 20px;
+  background: #f6f8fb;
+  min-height: 100vh;
+}
+
+/* ================= NAV ================= */
+.team-nav {
+  display: flex;
+  gap: 25px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+
+.team-nav span {
+  font-size: 15px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  position: relative;
+}
+
+.team-nav span:hover {
+  color: #111827;
+}
+
+.team-nav .active {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.team-nav .active::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #6366f1;
+}
+
+/* ================= SUMMARY ================= */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+/* CARD */
+.summary-card {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: 0.3s;
+  border: 1px solid #f1f5f9;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* ICON */
+.summary-card .icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.icon.green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.icon.gray {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.icon.orange {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+/* TEXT */
+.summary-card h3 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.summary-card p {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* ================= LIST TABLE ================= */
+.list-view {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.list-view table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.list-view th {
+  background: #f9fafb;
+  text-align: left;
+  padding: 12px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.list-view td {
+  padding: 12px;
+  font-size: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.list-view tr:hover {
+  background: #f9fafb;
+}
+
+/* ================= BOARD ================= */
+.kanban {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+}
+
+.column {
+  min-width: 280px;
+  background: #f1f5f9;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.column h4 {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #475569;
+}
+
+/* TASK CARD */
+.task-card {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.task-card:hover {
+  transform: scale(1.02);
+}
+
+/* ================= CALENDAR ================= */
+.calendar-view {
+  display: grid;
+  gap: 10px;
+}
+
+.calendar-item {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #6366f1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* ================= TIMELINE ================= */
+.timeline {
+  margin-top: 10px;
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 15px;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  background: #6366f1;
+  border-radius: 50%;
+}
+
+.timeline-item span {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.timeline-item p {
+  font-size: 14px;
+  margin-top: 3px;
+}
+
+
+
+
+
+
+.list-view {
+  padding: 16px;
+  background: #f7f8fa;
+}
+
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.task-table th {
+  text-align: left;
+  padding: 12px;
+  font-size: 14px;
+  color: #6b7280;
+  background: #f1f2f4;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.task-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.task-table tr:hover {
+  background: #f9fafb;
+}
+
+/* Work column */
+.work-cell {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.task-id {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.task-title {
+  color: #111827;
+}
+
+/* User */
+.user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  background: #2563eb;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Badges */
+.badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Status colors */
+.status.in\ progress {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status.done {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.todo {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Priority */
+.priority.high {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.priority.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.priority.low {
+  background: #dcfce7;
+  color: #166534;
+}
+
+
+
+.sprint-card button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sprint-card button:hover {
+  color: black;
+}
+
+
+
+/* DELETE BUTTON */
+.delete-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.sprint-card {
+  position: relative;
+}
+
+
+
+
+
+/* ================= TEAM SECTION (FIXED) ================= */
+
+.team-create {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* INPUT */
+.team-input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* DROPDOWN */
+.team-select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+}
+
+/* BUTTON */
+.team-btn {
+  padding: 8px 12px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.team-btn:hover {
+  background: #4f46e5;
+}
+
+/* TEAM LIST */
+.team-list {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+/* TEAM CARD */
+.team-avatar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  padding: 6px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* AVATAR CIRCLE */
+.avatar-circle {
+  width: 30px;
+  height: 30px;
+  background: #6366f1;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* NAME */
+.team-avatar span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ROLE */
+.team-avatar small {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+
+
+/* MEMBER DELETE BUTTON */
+.team-avatar {
+  position: relative;
+}
+
+.member-delete {
+  position: absolute;
+  top: -5px;
+  right: -1px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  cursor: pointer;
+  display: none;
+}
+
+/* show on hover */
+.team-avatar:hover .member-delete {
+  display: block;
+}
+
+.member-delete:hover {
+  background: #dc2626;
+}
+
+
+
+
+
+
+
+
+
+

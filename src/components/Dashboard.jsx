@@ -66,6 +66,8 @@ export default function Dashboard() {
         <button onClick={() => setActiveTab("tasks")}>Tasks</button>
         <button onClick={() => setActiveTab("projects")}>Projects</button>
         <button onClick={() => setActiveTab("reports")}>Reports</button>
+        <button onClick={() => setActiveTab("sprint")}>Sprint</button>
+        <button onClick={() => setActiveTab("team")}>My Teams</button>
       </aside>
 {sidebarOpen && (
   <div className="overlay" onClick={() => setSidebarOpen(false)}></div>
@@ -96,7 +98,14 @@ export default function Dashboard() {
 )}
         {activeTab === "projects" && <Projects projects={projects} />}
         {activeTab === "reports" && <Reports tasks={tasks} />}
-        {activeTab === "team" && <Team tasks={tasks} />}
+       
+        {activeTab === "sprint" && (
+  <SprintBoard
+    tasks={tasks}
+    setTasks={setTasks}
+  />
+)}
+    {activeTab === "team" && <Team tasks={tasks} />}
       </div>
 
       {showModal && (
@@ -377,12 +386,7 @@ function Projects({ projects }) {
               <p>{p.description}</p>
 
               {/* PROGRESS BAR */}
-              <div className="progress">
-                <div
-                  className="progress-bar"
-                  style={{ width: `${(i + 1) * 25}%` }} // demo progress
-                ></div>
-              </div>
+              
 
               {/* FOOTER */}
               <div className="project-footer">
@@ -501,50 +505,6 @@ function Reports({ tasks }) {
 // TEAM
 ////////////////////////////////////////////////////
 
-function Team({ tasks }) {
-
-  // group tasks by user
-  const users = {};
-
-  tasks.forEach(t => {
-    const user = t.assigned_to || "User";
-    if (!users[user]) users[user] = 0;
-    users[user]++;
-  });
-
-  return (
-    <div className="team-page">
-
-      <h2 className="page-title">Our Team</h2>
-
-      {/* TEAM CARDS */}
-      <div className="team-grid">
-        {Object.keys(users).map((u, i) => (
-          <div className="team-card" key={i}>
-            <img src={`https://i.pravatar.cc/100?img=${i+1}`} />
-            <h4>{u}</h4>
-            <p>{users[u]} Tasks</p>
-          </div>
-        ))}
-      </div>
-
-      {/* TEAM LIST */}
-      <div className="team-list">
-        <h3>Team Members</h3>
-
-        {Object.keys(users).map((u, i) => (
-          <div className="team-row" key={i}>
-            <span>{u}</span>
-            <span>{users[u]} Tasks</span>
-            <span className="active">Active</span>
-          </div>
-        ))}
-
-      </div>
-
-    </div>
-  );
-}
 
 ////////////////////////////////////////////////////
 // CREATE TASK (FIXED 🔥)
@@ -564,16 +524,33 @@ const handleSubmit = async () => {
   }
 
   try {
-    // ✅ IMPORTANT: DO NOT SEND assigned_to
+    let projectId = null;
+
+    // 🔥 STEP 1: Check if project already exists
+    const existingProject = projects.find(
+      p => p.name.toLowerCase() === form.project.toLowerCase()
+    );
+
+    // 🔥 STEP 2: If NOT exists → create new project
+    if (!existingProject) {
+      const newProjRes = await BASE_URL.post("projects/", {
+        name: form.project,
+        description: "New project created from task"
+      });
+
+      projectId = newProjRes.data.id;
+    } else {
+      projectId = existingProject.id;
+    }
+
+    // 🔥 STEP 3: Create Task with project ID
     const payload = {
       title: form.title,
       description: form.description,
       status: form.status,
       priority: form.priority,
-      project: form.project
+      project: projectId
     };
-
-    console.log("Sending:", payload); // debug
 
     const res = await BASE_URL.post("tasks/", payload);
 
@@ -581,24 +558,9 @@ const handleSubmit = async () => {
     onClose();
 
   } catch (err) {
-    console.log(err.response?.data); // 🔥 show backend error
+    console.log(err.response?.data);
     alert("Error creating task");
   }
-  const deleteTask = async (id) => {
-  const confirmDelete = window.confirm("Are you sure you want to delete this task?");
-  if (!confirmDelete) return;
-
-  try {
-    await BASE_URL.delete(`tasks/${id}/`);
-
-    // ✅ remove from UI instantly
-    setTasks(prev => prev.filter(t => t.id !== id));
-
-  } catch (err) {
-    console.log(err);
-    alert("Error deleting task");
-  }
-};
 };
   return (
     <div className="modal">
@@ -618,13 +580,18 @@ const handleSubmit = async () => {
           placeholder="Description"
           onChange={e => setForm({ ...form, description: e.target.value })}
         />
+<input
+  list="project-list"
+  placeholder="Select or type project"
+  value={form.project}
+  onChange={e => setForm({ ...form, project: e.target.value })}
+/>
 
-        <select onChange={e => setForm({ ...form, project: e.target.value })}>
-          <option value="">Select Project</option>
-          {projects.map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
+<datalist id="project-list">
+  {projects.map(p => (
+    <option key={p.id} value={p.name} />
+  ))}
+</datalist>
 
         <select onChange={e => setForm({ ...form, priority: e.target.value })}>
           <option value="low">Low</option>
@@ -636,7 +603,624 @@ const handleSubmit = async () => {
           Create Task
         </button>
 
+
+
+
+
       </div>
+
+
+
+      
+    </div>
+
+
+
+
+
+  );
+}
+
+////////////////////////////////////////////////////
+// SPRINT BOARD (ADD ONLY - NO CHANGE ABOVE 🔥)
+import {
+  LineChart, Line, 
+  
+} from "recharts";
+
+
+
+function SprintBoard({ tasks, setTasks }) {
+
+  const [sprints, setSprints] = useState([]);
+  const [name, setName] = useState("");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [selectedSprint, setSelectedSprint] = useState(null);
+
+  const [team, setTeam] = useState([]);
+  const [memberName, setMemberName] = useState("");
+  const [designation, setDesignation] = useState("");
+
+  // LOAD DATA
+  useEffect(() => {
+    const sprintData = JSON.parse(localStorage.getItem("sprintData")) || [];
+    const teamData = JSON.parse(localStorage.getItem("teamData")) || [];
+    const selected = JSON.parse(localStorage.getItem("selectedSprint"));
+
+    setSprints(sprintData);
+    setTeam(teamData);
+
+    // ✅ FIX: auto select sprint
+    if (selected) {
+      setSelectedSprint(selected);
+    } else if (sprintData.length > 0) {
+      setSelectedSprint(sprintData[0]);
+    }
+
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("selectedSprint", JSON.stringify(selectedSprint));
+  }, [selectedSprint]);
+
+  useEffect(() => {
+    localStorage.setItem("sprintData", JSON.stringify(sprints));
+  }, [sprints]);
+
+  // CREATE SPRINT
+  const createSprint = () => {
+    if (!name || !start || !end) return;
+
+    const newSprint = {
+      id: Date.now(),
+      name,
+      start,
+      end,
+      status: "PLANNED"
+    };
+
+    setSprints([...sprints, newSprint]);
+
+    // ✅ FIX: auto open new sprint
+    setSelectedSprint(newSprint);
+
+    setName("");
+    setStart("");
+    setEnd("");
+  };
+
+  // DELETE SPRINT
+  const deleteSprint = (id) => {
+    const updated = sprints.filter(s => s.id !== id);
+    setSprints(updated);
+
+    if (selectedSprint?.id === id) {
+      setSelectedSprint(updated[0] || null);
+    }
+  };
+
+  // ADD MEMBER
+  const addMember = () => {
+    if (!memberName || !designation) return;
+
+    const updated = [
+      ...team,
+      { id: Date.now(), name: memberName, role: designation }
+    ];
+
+    setTeam(updated);
+    localStorage.setItem("teamData", JSON.stringify(updated));
+
+    setMemberName("");
+    setDesignation("");
+  };
+
+  // DELETE MEMBER
+  const deleteMember = (id) => {
+    const member = team.find(m => m.id === id);
+
+    const updatedTeam = team.filter(m => m.id !== id);
+    setTeam(updatedTeam);
+    localStorage.setItem("teamData", JSON.stringify(updatedTeam));
+
+    setTasks(tasks.map(t =>
+      t.assigned_to === member?.name
+        ? { ...t, assigned_to: "" }
+        : t
+    ));
+  };
+
+  // ASSIGN TASK
+  const assignTask = (taskId, sprintId, member) => {
+    setTasks(tasks.map(t =>
+      t.id === taskId
+        ? { ...t, sprint_id: sprintId, assigned_to: member }
+        : t
+    ));
+  };
+
+  // DRAG
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    setTasks(tasks.map(t =>
+      t.id.toString() === result.draggableId
+        ? { ...t, status: result.destination.droppableId }
+        : t
+    ));
+  };
+
+  const sprintTasks = tasks.filter(
+    t => t.sprint_id === selectedSprint?.id
+  );
+
+  // BURNDOWN
+  const burndown = [
+    { day: "Start", tasks: sprintTasks.length },
+    { day: "Mid", tasks: sprintTasks.filter(t => t.status !== "done").length },
+    { day: "End", tasks: sprintTasks.filter(t => t.status === "done").length }
+  ];
+
+  return (
+    <div className="sprint-page">
+
+      <h2>Sprint Management</h2>
+
+      {/* CREATE */}
+      <div className="create-sprint">
+        <input placeholder="Sprint name" value={name} onChange={e => setName(e.target.value)} />
+        <input type="date" value={start} onChange={e => setStart(e.target.value)} />
+        <input type="date" value={end} onChange={e => setEnd(e.target.value)} />
+        <button onClick={createSprint}>Create</button>
+      </div>
+
+      {/* SPRINT LIST */}
+      <div className="sprint-list">
+        {sprints.map(s => (
+          <div key={s.id}
+            className={`sprint-card ${selectedSprint?.id === s.id ? "active" : ""}`}
+            onClick={() => setSelectedSprint(s)}
+          >
+            <h4>{s.name}</h4>
+            <p>{s.status}</p>
+            <small>{s.start} → {s.end}</small>
+
+            {/* ✅ minimal hint (no style change) */}
+            <p style={{ fontSize: "10px", color: "gray" }}>click</p>
+
+            <button
+              className="delete-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteSprint(s.id);
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* ✅ empty message */}
+      {!selectedSprint && <p>Select a sprint</p>}
+
+      {selectedSprint && (
+        <>
+          {/* TEAM */}
+          <h3>Team</h3>
+
+          <div className="team-create">
+            <input
+              value={memberName}
+              onChange={e => setMemberName(e.target.value)}
+              placeholder="Enter member name"
+            />
+
+            <select
+              value={designation}
+              onChange={e => setDesignation(e.target.value)}
+            >
+              <option value="">Select Role</option>
+              <option value="Developer">Developer</option>
+              <option value="Designer">Designer</option>
+              <option value="Tester">Tester</option>
+            </select>
+
+            <button onClick={addMember}>Add</button>
+          </div>
+
+          <div className="team-list">
+            {team.map(m => (
+              <div key={m.id} className="team-avatar">
+                <span className="avatar-circle">
+                  {m.name?.charAt(0).toUpperCase()}
+                </span>
+                <span>{m.name}</span>
+                <small>{m.role}</small>
+
+                <button
+                  className="member-delete"
+                  onClick={() => deleteMember(m.id)}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* WORKLOAD */}
+          <h3>Workload</h3>
+          <div className="workload">
+            {team.map(m => {
+              const count = sprintTasks.filter(t => t.assigned_to === m.name).length;
+              return (
+                <div key={m.id} className="work-card">
+                  {m.name} <br /> {count} tasks
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ASSIGN */}
+          <h3>Assign Tasks</h3>
+          <div className="task-assign">
+            {tasks.map(t => (
+              <div key={t.id} className="assign-card">
+                <span>{t.title}</span>
+                <select onChange={e => assignTask(t.id, selectedSprint.id, e.target.value)}>
+                  <option>Assign</option>
+                  {team.map(m => <option key={m.id}>{m.name}</option>)}
+                </select>
+              </div>
+            ))}
+          </div>
+
+          {/* BOARD */}
+          <h3>Sprint Board</h3>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <div className="kanban">
+              {["todo", "in_progress", "done"].map(col => (
+                <Droppable droppableId={col} key={col}>
+                  {(p) => (
+                    <div ref={p.innerRef} {...p.droppableProps} className="column">
+                      <h4>{col}</h4>
+
+                      {sprintTasks.filter(t => t.status === col).map((t, i) => (
+                        <Draggable key={t.id} draggableId={t.id.toString()} index={i}>
+                          {(p) => (
+                            <div ref={p.innerRef} {...p.draggableProps} {...p.dragHandleProps} className="task-card">
+                              {t.title}
+                              <p>{t.assigned_to || "Unassigned"}</p>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+
+                      {p.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              ))}
+            </div>
+          </DragDropContext>
+
+          {/* BURNDOWN */}
+          <h3>Burndown Chart</h3>
+          <ResponsiveContainer height={200}>
+            <LineChart data={burndown}>
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="tasks" stroke="#6366f1" />
+            </LineChart>
+          </ResponsiveContainer>
+        </>
+      )}
+    </div>
+  );
+}
+
+
+
+
+
+
+function Team({ tasks = [] }) {
+
+const statusLabels = {
+  todo: "To Do",
+  in_progress: "In Progress",
+  done: "Completed"
+};
+
+  const [users, setUsers] = useState([]);
+
+const sprintTeam = JSON.parse(localStorage.getItem("teamData")) || [];
+
+const allUsers = [
+  ...users,
+  ...sprintTeam.map((m, i) => ({
+    id: `local-${i}`,
+    username: m.name
+  }))
+];
+  const [view, setView] = useState("summary");
+
+  const now = new Date();
+  const last7 = new Date(); last7.setDate(now.getDate() - 7);
+  const next7 = new Date(); next7.setDate(now.getDate() + 7);
+
+  const getDate = (d) => d ? new Date(d) : null;
+
+  // 🔥 COUNTS
+  const completed = tasks.filter(t => {
+    const d = getDate(t.updated_at) || getDate(t.created_at);
+    return t.status === "done" && d >= last7;
+  }).length;
+
+  const updated = tasks.filter(t => {
+    const d = getDate(t.updated_at) || getDate(t.created_at);
+    return d >= last7;
+  }).length;
+
+  const created = tasks.filter(t => {
+    const d = getDate(t.created_at);
+    return d >= last7;
+  }).length;
+
+  const dueSoon = tasks.filter(t => {
+    const d = getDate(t.due_date);
+    return d && d >= now && d <= next7;
+  }).length;
+ useEffect(() => {
+    BASE_URL.get("users/")
+      .then(res => setUsers(res.data))
+      .catch(err => console.log(err));
+  }, []);
+
+  const updateAssignee = async (taskId, value) => {
+  try {
+
+    // ✅ SPRINT MEMBER (local)
+    if (value.startsWith("local-")) {
+      const member = allUsers.find(u => u.id === value);
+
+      setTasks(prev =>
+        prev.map(t =>
+          t.id === taskId
+            ? {
+                ...t,
+                assigned_to: member.username,
+                assignee: "",
+                assignee_id: null
+              }
+            : t
+        )
+      );
+
+      return;
+    }
+
+    // ✅ API USER
+    await BASE_URL.put(`tasks/${taskId}/`, {
+      assignee: value
+    });
+
+    setTasks(prev =>
+      prev.map(t =>
+        t.id === taskId
+          ? {
+              ...t,
+              assignee_id: value,
+              assignee: users.find(u => u.id == value)?.username,
+              assigned_to: ""
+            }
+          : t
+      )
+    );
+
+  } catch (err) {
+    console.log(err);
+  }
+};
+  
+
+const normalizeStatus = (status) => {
+  if (!status) return "todo";
+
+  const s = status.toString().toLowerCase().trim();
+
+  if (s.includes("progress")) return "in_progress";
+  if (s.includes("done") || s.includes("complete")) return "done";
+  if (s.includes("todo")) return "todo";
+
+  return "todo"; // fallback
+};
+  return (
+    <div className="team-page">
+
+      {/* NAV */}
+      <div className="team-nav">
+        <span onClick={() => setView("summary")} className={view==="summary"?"active":""}>Summary</span>
+        <span onClick={() => setView("list")} className={view==="list"?"active":""}>List</span>
+        <span onClick={() => setView("board")} className={view==="board"?"active":""}>Board</span>
+       
+        <span onClick={() => setView("timeline")} className={view==="timeline"?"active":""}>Timeline</span>
+      </div>
+
+      {/* ================= SUMMARY ================= */}
+      {view === "summary" && (
+        <div className="summary-grid">
+
+          <div className="summary-card">
+            <h3>{completed}</h3>
+            <p>Completed (7 days)</p>
+          </div>
+
+          <div className="summary-card">
+            <h3>{updated}</h3>
+            <p>Updated (7 days)</p>
+          </div>
+
+          <div className="summary-card">
+            <h3>{created}</h3>
+            <p>Created (7 days)</p>
+          </div>
+
+          <div className="summary-card">
+            <h3>{dueSoon}</h3>
+            <p>Due Soon</p>
+          </div>
+
+        </div>
+      )}
+
+      {/* ================= LIST ================= 
+      {view === "list" && (
+        <div className="list-view">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Due</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {tasks.map(t => (
+                <tr key={t.id}>
+                  <td>{t.title}</td>
+                  <td>{t.status}</td>
+                  <td>{t.priority}</td>
+                  <td>{t.due_date || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}*/}
+
+ {view === "list" && (
+        <div className="list-view">
+          <table className="task-table">
+            <thead>
+              <tr>
+                <th>Work</th>
+                <th>Assignee</th>
+               
+               
+              
+                
+                <th>Created</th>
+               
+              </tr>
+            </thead>
+
+            <tbody>
+              {tasks.map((t) => (
+               <tr key={t.id}>
+
+  {/* WORK */}
+  <td className="work-cell">
+    <span className="task-title">{t.title}</span>
+  </td>
+
+  {/* ASSIGNEE */}
+<td>
+  <div className="user">
+    <div className="avatar">
+      {(() => {
+        const userObj = users.find(u => u.id === t.assignee_id);
+
+        const name =
+          typeof t.assigned_to === "string" ? t.assigned_to :
+          typeof t.assignee === "string" ? t.assignee :
+          userObj?.username || "Unassigned";
+
+        return name.charAt(0).toUpperCase();
+      })()}
+    </div>
+
+    <span className="assignee-name">
+      {(() => {
+        const userObj = users.find(u => u.id === t.assignee_id);
+
+        return (
+          (typeof t.assigned_to === "string" && t.assigned_to) ||
+          (typeof t.assignee === "string" && t.assignee) ||
+          userObj?.username ||
+          "Unassigned"
+        );
+      })()}
+    </span>
+  </div>
+</td>
+  {/* PRIORITY */}
+  
+  {/* STATUS ✅ */}
+ 
+
+  {/* CREATED DATE ✅ */}
+  <td>
+    {t.created_at
+      ? new Date(t.created_at).toLocaleDateString()
+      : "—"}
+  </td>
+
+</tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+ 
+
+
+ 
+      {/* ================= BOARD ================= */}
+      {view === "board" && (
+        <div className="kanban">
+          {["todo","in_progress","done"].map(col => (
+            <div key={col} className="column">
+              <h4>{col}</h4>
+
+              {tasks.filter(t => t.status === col).map(t => (
+                <div key={t.id} className="task-card">
+                  {t.title}
+                </div>
+              ))}
+
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ================= CALENDAR ================= */}
+    
+
+      {/* ================= TIMELINE ================= */}
+      {view === "timeline" && (
+        <div className="timeline">
+          {tasks.map(t => (
+            <div key={t.id} className="timeline-item">
+            <span>
+  {t.created_at
+    ? new Date(t.created_at).toLocaleString("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      })
+    : "—"}
+</span>
+              <p>{t.title}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
     </div>
   );
 }

@@ -65,8 +65,9 @@ export default function Dashboard() {
         <button onClick={() => setActiveTab("dashboard")}>Dashboard</button>
         <button onClick={() => setActiveTab("tasks")}>Tasks</button>
         <button onClick={() => setActiveTab("projects")}>Projects</button>
-        <button onClick={() => setActiveTab("reports")}>Reports</button>
+      
         <button onClick={() => setActiveTab("sprint")}>Sprint</button>
+        <button onClick={() => setActiveTab("calendar")}>Calendar</button>
         <button onClick={() => setActiveTab("team")}>My Teams</button>
       </aside>
 {sidebarOpen && (
@@ -88,7 +89,13 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {activeTab === "dashboard" && <DashboardHome data={dashboard} />}
+      {activeTab === "dashboard" && (
+  <DashboardHome 
+    data={dashboard} 
+    tasks={tasks} 
+    projects={projects} 
+  />
+)}
        {activeTab === "tasks" && (
   <Tasks
     tasks={tasks}
@@ -96,7 +103,13 @@ export default function Dashboard() {
     onDragEnd={onDragEnd}
   />
 )}
-        {activeTab === "projects" && <Projects projects={projects} />}
+       {activeTab === "projects" && (
+  <Projects 
+    projects={projects} 
+    setProjects={setProjects} 
+    tasks={tasks}  // ✅ ADD THIS
+  />
+)}
         {activeTab === "reports" && <Reports tasks={tasks} />}
        
         {activeTab === "sprint" && (
@@ -104,7 +117,7 @@ export default function Dashboard() {
     tasks={tasks}
     setTasks={setTasks}
   />
-)}
+)}{activeTab === "calendar" && <CalendarView tasks={tasks} />}
     {activeTab === "team" && <Team tasks={tasks} />}
       </div>
 
@@ -126,7 +139,7 @@ export default function Dashboard() {
 ////////////////////////////////////////////////////
 // DASHBOARD
 ////////////////////////////////////////////////////
-function DashboardHome({ data }) {
+function DashboardHome({ data, tasks = [], projects = [] }) {
   if (!data) return <p>Loading...</p>;
 
   const pie = [
@@ -137,9 +150,38 @@ function DashboardHome({ data }) {
 
   const bar = [
     { name: "Tasks", value: data.total_tasks || 0 },
-    { name: "Projects", value: data.total_projects || 0 } // must exist
+    { name: "Projects", value: data.total_projects || 0 }
   ];
 
+  const getProjectStats = (projectId) => {
+  const projectTasks = (tasks || []).filter(t => {
+    if (!t.project) return false;
+
+    return typeof t.project === "object"
+      ? t.project.id === projectId
+      : t.project === projectId;
+  });
+
+  const total = projectTasks.length;
+
+  if (total === 0) {
+    return [
+      { name: "Completed", value: 0 },
+      { name: "Developing", value: 0 },
+      { name: "Pending", value: 0 }
+    ];
+  }
+
+  const done = projectTasks.filter(t => t.status === "done").length;
+  const progress = projectTasks.filter(t => t.status === "in_progress").length;
+  const pending = projectTasks.filter(t => t.status === "todo").length;
+
+  return [
+    { name: "Completed", value: Math.round((done / total) * 100) },
+    { name: "Developing", value: Math.round((progress / total) * 100) },
+    { name: "Pending", value: Math.round((pending / total) * 100) }
+  ];
+};
   return (
     <div className="grid">
       <Card title="Tasks" value={data.total_tasks || 0} />
@@ -172,6 +214,43 @@ function DashboardHome({ data }) {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      {/* ✅ SAFE PROJECT SECTION */}
+      <div className="chart" style={{ gridColumn: "span 2" }}>
+        <h4>Project Progress</h4>
+
+        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+          {(projects || []).map(p => {
+            const pdata = getProjectStats(p.id);
+
+            return (
+              <div key={p.id} style={{ width: "250px" }}>
+                <h5>{p.name}</h5>
+
+                <ResponsiveContainer height={180}>
+                  <PieChart>
+                    <Pie data={pdata} dataKey="value" innerRadius={50}>
+                      <Cell fill="#22c55e" />
+                      <Cell fill="#3b82f6" />
+                      <Cell fill="#f59e0b" />
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+
+                <div style={{ fontSize: "12px" }}>
+                  {pdata.map((d, i) => (
+                    <p key={i}>
+                      {d.name}: {d.value}%
+                    </p>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -369,7 +448,27 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
 ////////////////////////////////////////////////////
 // PROJECTS
 ////////////////////////////////////////////////////
-function Projects({ projects }) {
+function Projects({ projects, setProjects }) {
+const deleteProject = async (project) => {
+  if (!window.confirm(`Delete "${project.name}" project?`)) return;
+
+  try {
+    await BASE_URL.delete(`projects/${project.id}/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      }
+    });
+
+    setProjects(prev => prev.filter(p => p.id !== project.id));
+
+    alert("Project deleted successfully ✅");
+
+  } catch (err) {
+    console.log("STATUS:", err.response?.status);
+    console.log("DATA:", err.response?.data);
+    alert("Delete failed: " + JSON.stringify(err.response?.data));
+  }
+};
   return (
     <div className="projects-page">
 
@@ -379,27 +478,43 @@ function Projects({ projects }) {
         {projects.length === 0 ? (
           <p>No projects found</p>
         ) : (
-          projects.map((p, i) => (
-            <div key={p.id} className="project-card">
+          projects.map((p) => (
+            <div key={p.id} className="project-card" style={{ position: "relative" }}>
 
+              {/* ✅ DELETE BUTTON 
+              <button
+                className="delete-btn"
+                onClick={() => deleteProject(p)}   // ✅ FIXED
+                style={{
+                  position: "absolute",
+                  top: "10px",
+                  right: "10px",
+                  background: "red",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "26px",
+                  height: "26px",
+                  cursor: "pointer",
+                  fontWeight: "bold"
+                }}
+              >
+                ✕
+              </button>*/}
+
+              {/* PROJECT INFO */}
               <h3>{p.name}</h3>
               <p>{p.description}</p>
 
-              {/* PROGRESS BAR */}
-              
-
               {/* FOOTER */}
               <div className="project-footer">
-
                 <span className="status active">Active</span>
 
-                {/* AVATARS */}
                 <div className="avatars">
-                  <img src="https://i.pravatar.cc/30?img=1" />
-                  <img src="https://i.pravatar.cc/30?img=2" />
-                  <img src="https://i.pravatar.cc/30?img=3" />
+                  <img src="https://i.pravatar.cc/30?img=1" alt="" />
+                  <img src="https://i.pravatar.cc/30?img=2" alt="" />
+                  <img src="https://i.pravatar.cc/30?img=3" alt="" />
                 </div>
-
               </div>
 
             </div>
@@ -408,9 +523,8 @@ function Projects({ projects }) {
       </div>
     </div>
   );
-}//////////////////////////////////////
-// REPORTS
-////////////////////////////////////////////////////
+}
+
 
 
 
@@ -630,6 +744,12 @@ import {
 
 
 
+
+
+
+
+
+
 function SprintBoard({ tasks, setTasks }) {
 
   const [sprints, setSprints] = useState([]);
@@ -642,7 +762,7 @@ function SprintBoard({ tasks, setTasks }) {
   const [memberName, setMemberName] = useState("");
   const [designation, setDesignation] = useState("");
 
-  // LOAD DATA
+  // ✅ LOAD DATA (FIXED)
   useEffect(() => {
     const sprintData = JSON.parse(localStorage.getItem("sprintData")) || [];
     const teamData = JSON.parse(localStorage.getItem("teamData")) || [];
@@ -651,24 +771,31 @@ function SprintBoard({ tasks, setTasks }) {
     setSprints(sprintData);
     setTeam(teamData);
 
-    // ✅ FIX: auto select sprint
+    // ✅ FIX: restore selected sprint correctly
     if (selected) {
-      setSelectedSprint(selected);
+      const found = sprintData.find(s => s.id === selected.id);
+      setSelectedSprint(found || sprintData[0] || null);
     } else if (sprintData.length > 0) {
       setSelectedSprint(sprintData[0]);
     }
 
   }, []);
 
+  // ✅ SAVE SELECTED SPRINT
   useEffect(() => {
-    localStorage.setItem("selectedSprint", JSON.stringify(selectedSprint));
+    if (selectedSprint) {
+      localStorage.setItem("selectedSprint", JSON.stringify(selectedSprint));
+    }
   }, [selectedSprint]);
 
+  // ✅ SAVE SPRINTS (FIXED - prevent overwrite empty)
   useEffect(() => {
-    localStorage.setItem("sprintData", JSON.stringify(sprints));
+    if (sprints.length > 0) {
+      localStorage.setItem("sprintData", JSON.stringify(sprints));
+    }
   }, [sprints]);
 
-  // CREATE SPRINT
+  // CREATE SPRINT (FIXED SAVE)
   const createSprint = () => {
     if (!name || !start || !end) return;
 
@@ -680,9 +807,11 @@ function SprintBoard({ tasks, setTasks }) {
       status: "PLANNED"
     };
 
-    setSprints([...sprints, newSprint]);
+    const updated = [...sprints, newSprint];
 
-    // ✅ FIX: auto open new sprint
+    setSprints(updated);
+    localStorage.setItem("sprintData", JSON.stringify(updated)); // ✅ SAVE
+
     setSelectedSprint(newSprint);
 
     setName("");
@@ -731,24 +860,30 @@ function SprintBoard({ tasks, setTasks }) {
     ));
   };
 
-  // ASSIGN TASK
+  // ASSIGN TASK (OPTIONAL SAVE FIX)
   const assignTask = (taskId, sprintId, member) => {
-    setTasks(tasks.map(t =>
+    const updated = tasks.map(t =>
       t.id === taskId
         ? { ...t, sprint_id: sprintId, assigned_to: member }
         : t
-    ));
+    );
+
+    setTasks(updated);
+    localStorage.setItem("tasksData", JSON.stringify(updated)); // ✅ persist tasks
   };
 
   // DRAG
   const onDragEnd = (result) => {
     if (!result.destination) return;
 
-    setTasks(tasks.map(t =>
+    const updated = tasks.map(t =>
       t.id.toString() === result.draggableId
         ? { ...t, status: result.destination.droppableId }
         : t
-    ));
+    );
+
+    setTasks(updated);
+    localStorage.setItem("tasksData", JSON.stringify(updated)); // ✅ persist
   };
 
   const sprintTasks = tasks.filter(
@@ -786,8 +921,7 @@ function SprintBoard({ tasks, setTasks }) {
             <p>{s.status}</p>
             <small>{s.start} → {s.end}</small>
 
-            {/* ✅ minimal hint (no style change) */}
-            <p style={{ fontSize: "10px", color: "gray" }}>click</p>
+            <p style={{ fontSize: "10px", color: "gray" }}></p>
 
             <button
               className="delete-btn"
@@ -802,12 +936,10 @@ function SprintBoard({ tasks, setTasks }) {
         ))}
       </div>
 
-      {/* ✅ empty message */}
-      {!selectedSprint && <p>Select a sprint</p>}
+      {!selectedSprint && <p></p>}
 
       {selectedSprint && (
         <>
-          {/* TEAM */}
           <h3>Team</h3>
 
           <div className="team-create">
@@ -849,7 +981,6 @@ function SprintBoard({ tasks, setTasks }) {
             ))}
           </div>
 
-          {/* WORKLOAD */}
           <h3>Workload</h3>
           <div className="workload">
             {team.map(m => {
@@ -862,7 +993,6 @@ function SprintBoard({ tasks, setTasks }) {
             })}
           </div>
 
-          {/* ASSIGN */}
           <h3>Assign Tasks</h3>
           <div className="task-assign">
             {tasks.map(t => (
@@ -876,7 +1006,6 @@ function SprintBoard({ tasks, setTasks }) {
             ))}
           </div>
 
-          {/* BOARD */}
           <h3>Sprint Board</h3>
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="kanban">
@@ -905,7 +1034,6 @@ function SprintBoard({ tasks, setTasks }) {
             </div>
           </DragDropContext>
 
-          {/* BURNDOWN */}
           <h3>Burndown Chart</h3>
           <ResponsiveContainer height={200}>
             <LineChart data={burndown}>
@@ -920,7 +1048,6 @@ function SprintBoard({ tasks, setTasks }) {
     </div>
   );
 }
-
 
 
 
@@ -1068,10 +1195,7 @@ const normalizeStatus = (status) => {
             <p>Created (7 days)</p>
           </div>
 
-          <div className="summary-card">
-            <h3>{dueSoon}</h3>
-            <p>Due Soon</p>
-          </div>
+          
 
         </div>
       )}
@@ -1224,3 +1348,128 @@ const normalizeStatus = (status) => {
     </div>
   );
 }
+
+
+
+function CalendarView({ tasks }) {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [sprints, setSprints] = useState([]);
+
+  // ✅ LOAD SPRINTS
+  useEffect(() => {
+    const sprintData = JSON.parse(localStorage.getItem("sprintData")) || [];
+    setSprints(sprintData);
+  }, []);
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const prevMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1));
+  };
+
+  const nextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1));
+  };
+
+  // ✅ GET FULL SPRINT OBJECT
+  const getSprint = (sprintId) => {
+    return sprints.find(s => Number(s.id) === Number(sprintId));
+  };
+
+  // ✅ FORMAT DATE
+  const formatDate = (date) => {
+    if (!date) return "";
+    return new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short"
+    });
+  };
+
+  // ✅ GET TASKS FOR DAY (based on created date)
+  const getTasksForDay = (day) => {
+    return tasks.filter((t) => {
+      if (!t.created_at) return false;
+      const d = new Date(t.created_at);
+      return (
+        d.getDate() === day &&
+        d.getMonth() === month &&
+        d.getFullYear() === year
+      );
+    });
+  };
+
+  const days = [];
+
+  // EMPTY CELLS
+  for (let i = 0; i < firstDay; i++) {
+    days.push(<div key={"empty-" + i} className="calendar-cell empty"></div>);
+  }
+
+  // DAYS
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayTasks = getTasksForDay(d);
+
+    days.push(
+      <div key={d} className="calendar-cell">
+        <div className="date">{d}</div>
+
+        {dayTasks.map((t) => {
+          const sprint = getSprint(t.sprint_id);
+
+          return (
+            <div key={t.id} className="task-pill">
+              <strong>{t.title}</strong>
+
+              <div style={{ fontSize: "10px" }}>
+                🏁 {sprint?.name || "No Sprint"}
+              </div>
+
+              <div style={{ fontSize: "10px" }}>
+                📅 {sprint
+                  ? `${formatDate(sprint.start)} → ${formatDate(sprint.end)}`
+                  : "-"}
+              </div>
+
+              <div style={{ fontSize: "10px" }}>
+                👤 {t.assigned_to || "Unassigned"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div className="calendar-page">
+
+      {/* HEADER */}
+      <div className="calendar-header">
+        <button onClick={prevMonth}>{"<"}</button>
+        <h3>
+          {currentDate.toLocaleString("default", { month: "long" })} {year}
+        </h3>
+        <button onClick={nextMonth}>{">"}</button>
+      </div>
+
+      {/* WEEK NAMES */}
+      <div className="calendar-grid header">
+        <div>Sun</div>
+        <div>Mon</div>
+        <div>Tue</div>
+        <div>Wed</div>
+        <div>Thu</div>
+        <div>Fri</div>
+        <div>Sat</div>
+      </div>
+
+      {/* DAYS */}
+      <div className="calendar-grid">{days}</div>
+    </div>
+  );
+}
+

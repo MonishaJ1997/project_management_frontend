@@ -5,6 +5,11 @@ import { FaFacebookF, FaTwitter, FaLinkedinIn, FaGithub } from "react-icons/fa";
 function Footer() {
   const navigate = useNavigate();
 
+  const handleNavigation = (path) => {
+    navigate(path);
+    window.scrollTo({ top: 0, behavior: "smooth" }); // scroll to top
+  };
+
   return (
     <footer className="footer">
 
@@ -22,11 +27,10 @@ function Footer() {
         <div className="footer-col">
           <h3>Quick Links</h3>
           <ul>
-            <li onClick={() => navigate("/")}>Home</li>
-            <li onClick={() => navigate("/features")}>Features</li>
-            <li onClick={() => navigate("/pricing")}>Pricing</li>
-            <li onClick={() => navigate("/about")}>About Us</li>
-            <li onClick={() => navigate("/dashboard")}>Dashboard</li>
+            <li onClick={() => handleNavigation("/")}>Home</li>
+            <li onClick={() => handleNavigation("/features")}>Features</li>
+            <li onClick={() => handleNavigation("/pricing")}>Pricing</li>
+            <li onClick={() => handleNavigation("/about")}>About Us</li>
           </ul>
         </div>
 
@@ -34,10 +38,10 @@ function Footer() {
         <div className="footer-col">
           <h3>Resources</h3>
           <ul>
-            <li onClick={() => navigate("/help")}>Help Center</li>
-            <li onClick={() => navigate("/faq")}>FAQ</li>
-            <li onClick={() => navigate("/privacy")}>Privacy Policy</li>
-            <li onClick={() => navigate("/terms")}>Terms & Conditions</li>
+            <li onClick={() => handleNavigation("/help")}>Help Center</li>
+            <li onClick={() => handleNavigation("/faq")}>FAQ</li>
+            <li onClick={() => handleNavigation("/privacy")}>Privacy Policy</li>
+            <li onClick={() => handleNavigation("/terms")}>Terms & Conditions</li>
           </ul>
         </div>
 
@@ -48,17 +52,16 @@ function Footer() {
           <p>Phone: +91 98765 43210</p>
 
           <div className="social-icons">
-  <FaFacebookF
-    onClick={() => window.open("https://facebook.com", "_blank")}
-  />
-  <FaTwitter
-    onClick={() => window.open("https://twitter.com", "_blank")}
-  />
-  <FaLinkedinIn
-    onClick={() => window.open("https://linkedin.com", "_blank")}
-  />
- 
-</div>
+            <FaFacebookF
+              onClick={() => window.open("https://facebook.com", "_blank")}
+            />
+            <FaTwitter
+              onClick={() => window.open("https://twitter.com", "_blank")}
+            />
+            <FaLinkedinIn
+              onClick={() => window.open("https://linkedin.com", "_blank")}
+            />
+          </div>
         </div>
 
       </div>

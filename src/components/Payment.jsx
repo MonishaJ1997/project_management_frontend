@@ -18,34 +18,82 @@ export default function Payment() {
   });
 
   const [errors, setErrors] = useState({});
+const handleChange = (e) => {
+  let { name, value } = e.target;
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  // ================= CARD NUMBER =================
+  if (name === "cardNumber") {
+    value = value.replace(/\D/g, ""); // remove non-digits
+    value = value.substring(0, 16); // max 16 digits
 
-  const validate = () => {
-    let err = {};
+    // add space every 4 digits
+    value = value.replace(/(\d{4})(?=\d)/g, "$1 ");
+  }
 
-    if (!/^\d{16}$/.test(form.cardNumber)) {
-      err.cardNumber = "Enter 16 digit card number";
+  // ================= EXPIRY =================
+  if (name === "expiry") {
+    value = value.replace(/\D/g, ""); // only numbers
+
+    if (value.length >= 3) {
+      value = value.substring(0, 4);
+      value = value.replace(/(\d{2})(\d{1,2})/, "$1/$2");
     }
+  }
 
-    if (!/^[A-Za-z ]+$/.test(form.name)) {
-      err.name = "Only letters allowed";
+  // ================= CVV =================
+  if (name === "cvv") {
+    value = value.replace(/\D/g, "");
+    value = value.substring(0, 3);
+  }
+
+  // ================= NAME =================
+  if (name === "name") {
+    value = value.replace(/[^A-Za-z ]/g, "");
+  }
+
+  setForm({ ...form, [name]: value });
+};
+
+
+const validate = () => {
+  let err = {};
+
+  // CARD NUMBER (remove spaces before checking)
+  if (!/^\d{16}$/.test(form.cardNumber.replace(/\s/g, ""))) {
+    err.cardNumber = "Enter 16 digit card number";
+  }
+
+  // NAME
+  if (!/^[A-Za-z ]+$/.test(form.name)) {
+    err.name = "Only letters allowed";
+  }
+
+  // EXPIRY FORMAT CHECK
+  if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(form.expiry)) {
+    err.expiry = "Format MM/YY";
+  } else {
+    // ✅ FUTURE DATE VALIDATION
+    const [month, year] = form.expiry.split("/");
+
+    const expiryDate = new Date(`20${year}`, month); // next month
+    const today = new Date();
+
+    // set today to first day of current month for fair compare
+    const current = new Date(today.getFullYear(), today.getMonth() + 1);
+
+    if (expiryDate < current) {
+      err.expiry = "Card expired";
     }
+  }
 
-    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(form.expiry)) {
-      err.expiry = "Format MM/YY";
-    }
+  // CVV
+  if (!/^\d{3}$/.test(form.cvv)) {
+    err.cvv = "3 digit CVV";
+  }
 
-    if (!/^\d{3}$/.test(form.cvv)) {
-      err.cvv = "3 digit CVV";
-    }
-
-    setErrors(err);
-    return Object.keys(err).length === 0;
-  };
-
+  setErrors(err);
+  return Object.keys(err).length === 0;
+};
   const handlePay = () => {
     if (validate()) {
       navigate("/success", { state: { plan, price, billing } });

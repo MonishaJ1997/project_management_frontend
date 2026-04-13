@@ -448,6 +448,7 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
 ////////////////////////////////////////////////////
 // PROJECTS
 ////////////////////////////////////////////////////
+ ////////////////////////////////////////////////////
 function Projects({ projects, setProjects }) {
 const deleteProject = async (project) => {
   if (!window.confirm(`Delete "${project.name}" project?`)) return;
@@ -504,7 +505,7 @@ const deleteProject = async (project) => {
 
               {/* PROJECT INFO */}
               <h3>{p.name}</h3>
-              <p>{p.description}</p>
+              
 
               {/* FOOTER */}
               <div className="project-footer">
@@ -524,8 +525,6 @@ const deleteProject = async (project) => {
     </div>
   );
 }
-
-
 
 
 function Reports({ tasks }) {
@@ -628,7 +627,7 @@ function CreateTaskModal({ onClose, onCreate, projects }) {
     title: "",
     description: "",
     status: "todo",
-    priority: "medium",
+    priority: "",
     project: ""
   });
 const handleSubmit = async () => {
@@ -673,7 +672,7 @@ const handleSubmit = async () => {
 
   } catch (err) {
     console.log(err.response?.data);
-    alert("Error creating task");
+    alert("Error found.Please fill all the details");
   }
 };
   return (
@@ -696,22 +695,29 @@ const handleSubmit = async () => {
         />
 <input
   list="project-list"
-  placeholder="Select or type project"
+  placeholder={
+    projects.length === 0
+      ? "Create project"
+      : "Select or create project"
+  }
   value={form.project}
   onChange={e => setForm({ ...form, project: e.target.value })}
 />
-
 <datalist id="project-list">
   {projects.map(p => (
     <option key={p.id} value={p.name} />
   ))}
 </datalist>
 
-        <select onChange={e => setForm({ ...form, priority: e.target.value })}>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
+       <select
+  value={form.priority}
+  onChange={e => setForm({ ...form, priority: e.target.value })}
+>
+  <option value="" disabled>Select Priority</option>
+  <option value="low">Low</option>
+  <option value="medium">Medium</option>
+  <option value="high">High</option>
+</select>
 
         <button className="primary" onClick={handleSubmit}>
           Create Task
@@ -1472,4 +1478,3 @@ function CalendarView({ tasks }) {
     </div>
   );
 }
-

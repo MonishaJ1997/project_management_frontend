@@ -447,84 +447,75 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
 }
 ////////////////////////////////////////////////////
 // PROJECTS
-////////////////////////////////////////////////////
- ////////////////////////////////////////////////////
+
+
+
 function Projects({ projects, setProjects }) {
-const deleteProject = async (project) => {
-  if (!window.confirm(`Delete "${project.name}" project?`)) return;
 
-  try {
-    await BASE_URL.delete(`projects/${project.id}/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      }
-    });
+  const [newProject, setNewProject] = useState("");
 
-    setProjects(prev => prev.filter(p => p.id !== project.id));
+  // ✅ SAVE to localStorage
+  useEffect(() => {
+    localStorage.setItem("projects", JSON.stringify(projects));
+  }, [projects]);
 
-    alert("Project deleted successfully ✅");
+  // ✅ CREATE PROJECT
+  const createProject = () => {
+    if (!newProject.trim()) {
+      alert("Enter project name");
+      return;
+    }
 
-  } catch (err) {
-    console.log("STATUS:", err.response?.status);
-    console.log("DATA:", err.response?.data);
-    alert("Delete failed: " + JSON.stringify(err.response?.data));
-  }
-};
+    const project = {
+      id: Date.now(),
+      name: newProject
+    };
+
+    setProjects(prev => [...prev, project]);
+    setNewProject("");
+  };
+
+  // ✅ DELETE PROJECT
+  const deleteProject = (id) => {
+    if (!window.confirm("Delete this project?")) return;
+
+    setProjects(prev => prev.filter(p => p.id !== id));
+  };
+
   return (
     <div className="projects-page">
 
-      <h2 className="page-title">Projects</h2>
+      <h2>Projects</h2>
+
+      <div className="create-box">
+        <input
+          type="text"
+          value={newProject}
+          placeholder="Enter project name"
+          onChange={(e) => setNewProject(e.target.value)}
+        />
+        <button onClick={createProject}>Create</button>
+      </div>
 
       <div className="projects-grid">
         {projects.length === 0 ? (
-          <p>No projects found</p>
+          <p>No projects</p>
         ) : (
           projects.map((p) => (
-            <div key={p.id} className="project-card" style={{ position: "relative" }}>
-
-              {/* ✅ DELETE BUTTON 
-              <button
-                className="delete-btn"
-                onClick={() => deleteProject(p)}   // ✅ FIXED
-                style={{
-                  position: "absolute",
-                  top: "10px",
-                  right: "10px",
-                  background: "red",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: "26px",
-                  height: "26px",
-                  cursor: "pointer",
-                  fontWeight: "bold"
-                }}
-              >
-                ✕
-              </button>*/}
-
-              {/* PROJECT INFO */}
+            <div key={p.id} className="project-card">
+              <button onClick={() => deleteProject(p.id)}>✕</button>
               <h3>{p.name}</h3>
-              
-
-              {/* FOOTER */}
-              <div className="project-footer">
-                <span className="status active">Active</span>
-
-                <div className="avatars">
-                  <img src="https://i.pravatar.cc/30?img=1" alt="" />
-                  <img src="https://i.pravatar.cc/30?img=2" alt="" />
-                  <img src="https://i.pravatar.cc/30?img=3" alt="" />
-                </div>
-              </div>
-
             </div>
           ))
         )}
       </div>
+
     </div>
   );
 }
+
+
+
 
 
 function Reports({ tasks }) {
@@ -622,7 +613,10 @@ function Reports({ tasks }) {
 ////////////////////////////////////////////////////
 // CREATE TASK (FIXED 🔥)
 ////////////////////////////////////////////////////
+
+
 function CreateTaskModal({ onClose, onCreate, projects }) {
+
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -630,51 +624,28 @@ function CreateTaskModal({ onClose, onCreate, projects }) {
     priority: "",
     project: ""
   });
-const handleSubmit = async () => {
-  if (!form.title || !form.project) {
-    alert("Title & Project required");
-    return;
-  }
 
-  try {
-    let projectId = null;
-
-    // 🔥 STEP 1: Check if project already exists
-    const existingProject = projects.find(
-      p => p.name.toLowerCase() === form.project.toLowerCase()
-    );
-
-    // 🔥 STEP 2: If NOT exists → create new project
-    if (!existingProject) {
-      const newProjRes = await BASE_URL.post("projects/", {
-        name: form.project,
-        description: "New project created from task"
-      });
-
-      projectId = newProjRes.data.id;
-    } else {
-      projectId = existingProject.id;
+  // ✅ CREATE TASK (FRONTEND ONLY)
+  const handleSubmit = () => {
+    if (!form.title || !form.project) {
+      alert("Title & Project required");
+      return;
     }
 
-    // 🔥 STEP 3: Create Task with project ID
-    const payload = {
+    const newTask = {
+      id: Date.now(),
       title: form.title,
       description: form.description,
       status: form.status,
       priority: form.priority,
-      project: projectId
+      project: form.project,
+      created_at: new Date().toISOString()
     };
 
-    const res = await BASE_URL.post("tasks/", payload);
-
-    onCreate(res.data);
+    onCreate(newTask);
     onClose();
+  };
 
-  } catch (err) {
-    console.log(err.response?.data);
-    alert("Error found.Please fill all the details");
-  }
-};
   return (
     <div className="modal">
       <div className="modal-box">
@@ -684,62 +655,71 @@ const handleSubmit = async () => {
           <span onClick={onClose}>✖</span>
         </div>
 
+        {/* TITLE */}
         <input
           placeholder="Task Title"
+          value={form.title}
           onChange={e => setForm({ ...form, title: e.target.value })}
         />
 
+        {/* DESCRIPTION */}
         <textarea
           placeholder="Description"
+          value={form.description}
           onChange={e => setForm({ ...form, description: e.target.value })}
         />
-<input
-  list="project-list"
-  placeholder={
-    projects.length === 0
-      ? "Create project"
-      : "Select or create project"
-  }
-  value={form.project}
-  onChange={e => setForm({ ...form, project: e.target.value })}
-/>
-<datalist id="project-list">
-  {projects.map(p => (
-    <option key={p.id} value={p.name} />
-  ))}
-</datalist>
 
-       <select
-  value={form.priority}
-  onChange={e => setForm({ ...form, priority: e.target.value })}
->
-  <option value="" disabled>Select Priority</option>
-  <option value="low">Low</option>
-  <option value="medium">Medium</option>
-  <option value="high">High</option>
-</select>
+        {/* ✅ PROJECT DROPDOWN ONLY */}
+        <select
+          value={form.project}
+          onChange={e => setForm({ ...form, project: e.target.value })}
+        >
+          <option value="">Select Project</option>
 
-        <button className="primary" onClick={handleSubmit}>
+          {projects.length === 0 ? (
+            <option disabled>No projects found</option>
+          ) : (
+            projects.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))
+          )}
+        </select>
+
+        {/* PRIORITY */}
+        <select
+          value={form.priority}
+          onChange={e => setForm({ ...form, priority: e.target.value })}
+        >
+          <option value="">Select Priority</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+
+        {/* BUTTON */}
+        <button
+          className="primary"
+          onClick={handleSubmit}
+          disabled={projects.length === 0}
+        >
           Create Task
         </button>
 
-
-
-
+        {/* SHOW MESSAGE */}
+        {projects.length === 0 && (
+          <p style={{ color: "red", marginTop: "10px" }}>
+            ⚠ No projects found. Please create a project first.
+          </p>
+        )}
 
       </div>
-
-
-
-      
     </div>
-
-
-
-
-
   );
 }
+
+
 
 ////////////////////////////////////////////////////
 // SPRINT BOARD (ADD ONLY - NO CHANGE ABOVE 🔥)

@@ -68,7 +68,7 @@ body {
 .primary:hover{
   
   background: white;
-  color:#4f46e5;
+  color:4f46e5;
   border:2px solid #4f46e5;
 }
 
@@ -350,4 +350,119 @@ body {
   .feature-card-modern-home {
     padding: 15px;
   }
+}
+
+
+
+
+
+/* PAGE */
+.projects-page {
+  padding: 25px;
+  background: #f4f6f8;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* TITLE */
+.projects-page h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* CREATE BOX */
+.create-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.create-box input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.create-box input:focus {
+  border-color: #6366f1;
+  
+}
+
+.create-box button {
+  padding: 12px 18px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.create-box button:hover {
+  background:white;
+  color: #6366f1;
+  border: 2px solid #6366f1;
+}
+
+/* GRID */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+/* CARD */
+.project-card {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: 0.25s ease;
+  cursor: pointer;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* PROJECT NAME */
+.project-card h3 {
+  font-size: 16px;
+  margin: 0;
+  color: #333;
+  word-break: break-word;
+}
+
+/* DELETE BUTTON */
+.project-card button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.project-card button:hover {
+  background: #d9363e;
+}
+
+/* EMPTY TEXT */
+.projects-grid p {
+  color: #888;
+  font-size: 14px;
 }

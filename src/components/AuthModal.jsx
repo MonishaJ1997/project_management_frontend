@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser, registerUser } from "./auth";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // 👈 added
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./AuthModal.css";
 
 function AuthModal({ isOpen, onClose, onLogin }) {
@@ -16,7 +16,8 @@ function AuthModal({ isOpen, onClose, onLogin }) {
 
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // 👈 added
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false); // 🔥 added
 
   const toastRef = useRef(null);
 
@@ -56,12 +57,15 @@ function AuthModal({ isOpen, onClose, onLogin }) {
       }
 
       try {
+        setLoading(true);
+        showToast("Logging in..."); // 🔥 instant feedback
+
         const res = await loginUser(form.email, form.password);
 
         localStorage.setItem("access", res.access);
         localStorage.setItem("refresh", res.refresh);
 
-        const userData = await fetch("http://127.0.0.1:8000/api/me/", {
+        const userData = await fetch("https://project-management-backend-yo7k.onrender.com/api/me/", {
           headers: {
             Authorization: `Bearer ${res.access}`,
           },
@@ -71,7 +75,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
 
         window.dispatchEvent(new Event("authChange"));
 
-        showToast("Login successful");
+        showToast("Login successful ✅");
 
         onLogin();
 
@@ -82,8 +86,11 @@ function AuthModal({ isOpen, onClose, onLogin }) {
 
       } catch (err) {
         setErrors({ password: "Invalid email or password" });
-        showToast("Login failed");
+        showToast("Login failed ❌");
+      } finally {
+        setLoading(false);
       }
+
     } else {
       if (!validateName(form.name)) newErrors.name = "Only letters allowed";
       if (!validateEmail(form.email)) newErrors.email = "Enter valid email";
@@ -96,6 +103,9 @@ function AuthModal({ isOpen, onClose, onLogin }) {
       }
 
       try {
+        setLoading(true);
+        showToast("Registering..."); // 🔥 instant feedback
+
         await registerUser(form.name, form.email, form.password);
 
         localStorage.setItem(
@@ -108,7 +118,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
 
         window.dispatchEvent(new Event("authChange"));
 
-        showToast("User registered successfully");
+        showToast("User registered successfully ✅");
 
         setTimeout(() => {
           setIsLogin(true);
@@ -117,7 +127,9 @@ function AuthModal({ isOpen, onClose, onLogin }) {
 
       } catch (err) {
         setErrors({ email: "User already exists or invalid data" });
-        showToast("Registration failed");
+        showToast("Registration failed ❌");
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -155,7 +167,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
             />
             {errors.email && <p className="error">{errors.email}</p>}
 
-            {/* 👇 PASSWORD WITH EYE ICON */}
+            {/* PASSWORD FIELD */}
             <div className="password-field">
               <input
                 type={showPassword ? "text" : "password"}
@@ -165,19 +177,23 @@ function AuthModal({ isOpen, onClose, onLogin }) {
                 onChange={handleChange}
               />
               {form.password && (
-  <span
-    className="eye-icon"
-    onClick={() => setShowPassword(!showPassword)}
-  >
-    {showPassword ? <FaEyeSlash /> : <FaEye />}
-  </span>
-)}
+                <span
+                  className="eye-icon"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              )}
             </div>
 
             {errors.password && <p className="error">{errors.password}</p>}
 
-            <button type="submit" className="submit-btn">
-              {isLogin ? "Login" : "Register"}
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading
+                ? "Please wait..."
+                : isLogin
+                ? "Login"
+                : "Register"}
             </button>
           </form>
 

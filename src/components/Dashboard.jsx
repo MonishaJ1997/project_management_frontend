@@ -12,8 +12,18 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [dashboard, setDashboard] = useState({});
-  const [tasks, setTasks] = useState([]);
-  const [projects, setProjects] = useState([]);
+ 
+const [tasks, setTasks] = useState(() => {
+  const saved = localStorage.getItem("tasks");
+  return saved ? JSON.parse(saved) : [];
+});
+useEffect(() => {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}, [tasks]);
+  const [projects, setProjects] = useState(() => {
+  const saved = localStorage.getItem("projects");
+  return saved ? JSON.parse(saved) : [];
+});
   const [showModal, setShowModal] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -25,12 +35,12 @@ export default function Dashboard() {
   const fetchAllData = async () => {
     try {
       const dashRes = await BASE_URL.get("dashboard/");
-      const taskRes = await BASE_URL.get("tasks/");
-      const projRes = await BASE_URL.get("projects/");
+      
+      
 
       setDashboard(dashRes.data);
-      setTasks(taskRes.data);
-      setProjects(projRes.data);
+      
+     
     } catch (err) {
       console.log(err);
     }
@@ -116,6 +126,7 @@ export default function Dashboard() {
   <SprintBoard
     tasks={tasks}
     setTasks={setTasks}
+     projects={projects} 
   />
 )}{activeTab === "calendar" && <CalendarView tasks={tasks} />}
     {activeTab === "team" && <Team tasks={tasks} />}
@@ -139,56 +150,79 @@ export default function Dashboard() {
 ////////////////////////////////////////////////////
 // DASHBOARD
 ////////////////////////////////////////////////////
-function DashboardHome({ data, tasks = [], projects = [] }) {
-  if (!data) return <p>Loading...</p>;
+function DashboardHome({ tasks = [], projects = [] }) {
 
+  // ✅ SAFE DEFAULTS
+  const safeTasks = Array.isArray(tasks) ? tasks : [];
+  const safeProjects = Array.isArray(projects) ? projects : [];
+
+  // ✅ CALCULATIONS
+  const total = safeTasks.length;
+  const todo = safeTasks.filter(t => t.status === "todo").length;
+  const progress = safeTasks.filter(t => t.status === "in_progress").length;
+  const done = safeTasks.filter(t => t.status === "done").length;
+
+  // ✅ PIE DATA
   const pie = [
-    { name: "Todo", value: data.todo || 0 },
-    { name: "Progress", value: data.in_progress || 0 },
-    { name: "Done", value: data.done || 0 }
+    { name: "Todo", value: todo },
+    { name: "Progress", value: progress },
+    { name: "Done", value: done }
   ];
 
+  // ✅ BAR DATA
   const bar = [
-    { name: "Tasks", value: data.total_tasks || 0 },
-    { name: "Projects", value: data.total_projects || 0 }
+    { name: "Tasks", value: total },
+    { name: "Projects", value: safeProjects.length }
   ];
 
+  // ✅ PROJECT STATS
   const getProjectStats = (projectId) => {
-  const projectTasks = (tasks || []).filter(t => {
-    if (!t.project) return false;
+    const projectTasks = safeTasks.filter(t => {
+      if (!t.project) return false;
 
-    return typeof t.project === "object"
-      ? t.project.id === projectId
-      : t.project === projectId;
-  });
+      return typeof t.project === "object"
+        ? t.project.id === projectId
+        : Number(t.project) === Number(projectId);
+    });
 
-  const total = projectTasks.length;
+    const total = projectTasks.length;
 
-  if (total === 0) {
+    if (total === 0) {
+      return [
+        { name: "Completed", value: 0 },
+        { name: "Developing", value: 0 },
+        { name: "Pending", value: 0 }
+      ];
+    }
+
+    const done = projectTasks.filter(t => t.status === "done").length;
+    const progress = projectTasks.filter(t => t.status === "in_progress").length;
+    const pending = projectTasks.filter(t => t.status === "todo").length;
+
     return [
-      { name: "Completed", value: 0 },
-      { name: "Developing", value: 0 },
-      { name: "Pending", value: 0 }
+      { name: "Completed", value: Math.round((done / total) * 100) },
+      { name: "Developing", value: Math.round((progress / total) * 100) },
+      { name: "Pending", value: Math.round((pending / total) * 100) }
     ];
-  }
+  };
 
-  const done = projectTasks.filter(t => t.status === "done").length;
-  const progress = projectTasks.filter(t => t.status === "in_progress").length;
-  const pending = projectTasks.filter(t => t.status === "todo").length;
-
-  return [
-    { name: "Completed", value: Math.round((done / total) * 100) },
-    { name: "Developing", value: Math.round((progress / total) * 100) },
-    { name: "Pending", value: Math.round((pending / total) * 100) }
-  ];
-};
   return (
     <div className="grid">
-      <Card title="Tasks" value={data.total_tasks || 0} />
-      <Card title="To Do" value={data.todo || 0} />
-      <Card title="Progress" value={data.in_progress || 0} />
-      <Card title="Done" value={data.done || 0} />
 
+      {/* ✅ EMPTY STATE 
+      {total === 0 && (
+        <p style={{ padding: "20px" }}>
+          
+        </p>
+      )}*/}
+
+      {/* ✅ CARDS */}
+      <Card title="Tasks" value={total} />
+      <Card title="To Do" value={todo} />
+      <Card title="Progress" value={progress} />
+      <Card title="Done" value={done} />
+
+      {/* ✅ PIE */}
       <div className="chart">
         <h4>Task Distribution</h4>
         <ResponsiveContainer height={220}>
@@ -203,6 +237,7 @@ function DashboardHome({ data, tasks = [], projects = [] }) {
         </ResponsiveContainer>
       </div>
 
+      {/* ✅ BAR */}
       <div className="chart">
         <h4>Overview</h4>
         <ResponsiveContainer height={220}>
@@ -215,42 +250,46 @@ function DashboardHome({ data, tasks = [], projects = [] }) {
         </ResponsiveContainer>
       </div>
 
-      {/* ✅ SAFE PROJECT SECTION */}
+      {/* ✅ PROJECT PROGRESS */}
       <div className="chart" style={{ gridColumn: "span 2" }}>
         <h4>Project Progress</h4>
 
-        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-          {(projects || []).map(p => {
-            const pdata = getProjectStats(p.id);
+        {safeProjects.length === 0 ? (
+          <p>No projects found</p>
+        ) : (
+          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+            {safeProjects.map(p => {
+              const pdata = getProjectStats(p.id);
 
-            return (
-              <div key={p.id} style={{ width: "250px" }}>
-                <h5>{p.name}</h5>
+              return (
+                <div key={p.id} style={{ width: "250px" }}>
+                  <h5>{p.name}</h5>
 
-                <ResponsiveContainer height={180}>
-                  <PieChart>
-                    <Pie data={pdata} dataKey="value" innerRadius={50}>
-                      <Cell fill="#22c55e" />
-                      <Cell fill="#3b82f6" />
-                      <Cell fill="#f59e0b" />
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                  <ResponsiveContainer height={180}>
+                    <PieChart>
+                      <Pie data={pdata} dataKey="value" innerRadius={50}>
+                        <Cell fill="#22c55e" />
+                        <Cell fill="#3b82f6" />
+                        <Cell fill="#f59e0b" />
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
 
-                <div style={{ fontSize: "12px" }}>
-                  {pdata.map((d, i) => (
-                    <p key={i}>
-                      {d.name}: {d.value}%
-                    </p>
-                  ))}
+                  <div style={{ fontSize: "12px" }}>
+                    {pdata.map((d, i) => (
+                      <p key={i}>
+                        {d.name}: {d.value}%
+                      </p>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+              );
+            })}
+          </div>
+        )}
 
+      </div>
     </div>
   );
 }
@@ -264,29 +303,41 @@ function Card({ title, value }) {
 }
 
 ////////////////////////////////////////////////////
-// TASKS (IMPROVED)
+
 function Tasks({ tasks, setTasks, onDragEnd }) {
-  
-
-  // ✅ ADD DELETE FUNCTION HERE 🔥
-  const deleteTask = async (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this task?");
-    if (!confirmDelete) return;
-
-    try {
-      await BASE_URL.delete(`tasks/${id}/`);
-
-      // update UI instantly
-      setTasks(prev => prev.filter(t => t.id !== id));
-
-    } catch (err) {
-      console.log(err);
-      alert("Delete failed");
-    }
-  };
 
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+
+  // ✅ DELETE (NO BACKEND)
+  const deleteTask = (id) => {
+    if (!window.confirm("Delete this task?")) return;
+    setTasks(prev => prev.filter(t => t.id !== id));
+  };
+
+  // ✅ UPDATE STATUS (Start / Done / Back)
+  const updateStatus = (id, status) => {
+    setTasks(prev =>
+      prev.map(t =>
+        t.id === id ? { ...t, status } : t
+      )
+    );
+  };
+
+  // ✅ DRAG DROP
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const { draggableId, destination } = result;
+
+    setTasks(prev =>
+      prev.map(t =>
+        t.id.toString() === draggableId
+          ? { ...t, status: destination.droppableId }
+          : t
+      )
+    );
+  };
 
   const cols = [
     { key: "todo", title: "To Do" },
@@ -294,7 +345,7 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
     { key: "done", title: "Completed" }
   ];
 
-  // ✅ FILTER LOGIC
+  // ✅ FILTER + SEARCH
   const filteredTasks = tasks.filter(t => {
     const matchSearch =
       t.title.toLowerCase().includes(search.toLowerCase());
@@ -308,28 +359,8 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
       return new Date(t.created_at).toDateString() === today;
     }
 
-    if (filter === "week") {
-      const now = new Date();
-      const weekAgo = new Date();
-      weekAgo.setDate(now.getDate() - 7);
-      return new Date(t.created_at) >= weekAgo;
-    }
-
-    return true; // all
+    return true;
   });
-
-  // ✅ COMPLETE BUTTON
-  const updateStatus = async (id, status) => {
-  try {
-    await BASE_URL.put(`tasks/${id}/`, { status });
-
-    setTasks(prev =>
-      prev.map(t => (t.id === id ? { ...t, status } : t))
-    );
-  } catch (err) {
-    console.log(err);
-  }
-};
 
   return (
     <div className="tasks-page">
@@ -341,7 +372,6 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
         <div className="filters">
           <button onClick={() => setFilter("all")}>All</button>
           <button onClick={() => setFilter("today")}>Today</button>
-         
           <button onClick={() => setFilter("done")}>Completed</button>
         </div>
 
@@ -352,13 +382,17 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
       </div>
 
       {/* BOARD */}
-      <DragDropContext onDragEnd={onDragEnd}>
+      <DragDropContext onDragEnd={handleDragEnd}>
         <div className="kanban">
 
           {cols.map(col => (
             <Droppable droppableId={col.key} key={col.key}>
               {(p) => (
-                <div ref={p.innerRef} {...p.droppableProps} className="column">
+                <div
+                  ref={p.innerRef}
+                  {...p.droppableProps}
+                  className="column"
+                >
 
                   <div className="column-header">
                     <h4>{col.title}</h4>
@@ -370,7 +404,11 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
                   {filteredTasks
                     .filter(t => t.status === col.key)
                     .map((t, i) => (
-                      <Draggable key={t.id} draggableId={t.id.toString()} index={i}>
+                      <Draggable
+                        key={t.id}
+                        draggableId={t.id.toString()}
+                        index={i}
+                      >
                         {(p) => (
                           <div
                             ref={p.innerRef}
@@ -381,54 +419,54 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
                             <h5>{t.title}</h5>
                             <p>{t.description}</p>
 
-                           <div className="task-footer">
+                            <div className="task-footer">
 
-  <span className={`priority ${t.priority}`}>
-    {t.priority}
-  </span>
+                              <span className={`priority ${t.priority}`}>
+                                {t.priority}
+                              </span>
 
-  <div className="task-actions">
+                              <div className="task-actions">
 
-  {/* START */}
-  {t.status === "todo" && (
-    <button
-      className="start-btn"
-      onClick={() => updateStatus(t.id, "in_progress")}
-    >
-      ▶ Start
-    </button>
-  )}
+                                {/* START */}
+                                {t.status === "todo" && (
+                                  <button
+                                    className="start-btn"
+                                    onClick={() => updateStatus(t.id, "in_progress")}
+                                  >
+                                    ▶ Start
+                                  </button>
+                                )}
 
-  {/* DONE */}
-  {t.status === "in_progress" && (
-    <button
-      className="done-btn"
-      onClick={() => updateStatus(t.id, "done")}
-    >
-      ✔ Done
-    </button>
-  )}
+                                {/* DONE */}
+                                {t.status === "in_progress" && (
+                                  <button
+                                    className="done-btn"
+                                    onClick={() => updateStatus(t.id, "done")}
+                                  >
+                                    ✔ Done
+                                  </button>
+                                )}
 
-  {/* BACK */}
-  {t.status === "done" && (
-    <button
-      className="back-btn"
-      onClick={() => updateStatus(t.id, "todo")}
-    >
-      ↩ Back
-    </button>
-  )}
+                                {/* BACK */}
+                                {t.status === "done" && (
+                                  <button
+                                    className="back-btn"
+                                    onClick={() => updateStatus(t.id, "todo")}
+                                  >
+                                    ↩ Back
+                                  </button>
+                                )}
 
-  {/* 🔥 DELETE BUTTON */}
-  <button
-    className="delete-btn"
-    onClick={() => deleteTask(t.id)}
-  >
-    🗑 Delete
-  </button>
+                                {/* DELETE */}
+                                <button
+                                  className="delete-btn"
+                                  onClick={() => deleteTask(t.id)}
+                                >
+                                  🗑 Delete
+                                </button>
 
-</div>
-</div>
+                              </div>
+                            </div>
                           </div>
                         )}
                       </Draggable>
@@ -445,13 +483,14 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
     </div>
   );
 }
+
+
 ////////////////////////////////////////////////////
 // PROJECTS
 
 
 
 function Projects({ projects, setProjects }) {
-
   const [newProject, setNewProject] = useState("");
 
   // ✅ SAVE to localStorage
@@ -459,34 +498,46 @@ function Projects({ projects, setProjects }) {
     localStorage.setItem("projects", JSON.stringify(projects));
   }, [projects]);
 
-  // ✅ CREATE PROJECT
+  // ✅ CREATE PROJECT (with duplicate check)
   const createProject = () => {
     if (!newProject.trim()) {
       alert("Enter project name");
       return;
     }
 
+    // 🔥 CHECK DUPLICATE (case-insensitive)
+    const isDuplicate = projects.some(
+      (p) => p.name.toLowerCase() === newProject.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      alert("Project name already exists");
+      return;
+    }
+
     const project = {
       id: Date.now(),
-      name: newProject
+      name: newProject.trim(),
     };
 
-    setProjects(prev => [...prev, project]);
+    setProjects((prev) => [...prev, project]);
     setNewProject("");
   };
 
-  // ✅ DELETE PROJECT
+  // ✅ DELETE PROJECT (with popup + project name)
   const deleteProject = (id) => {
-    if (!window.confirm("Delete this project?")) return;
+    const project = projects.find((p) => p.id === id);
 
-    setProjects(prev => prev.filter(p => p.id !== id));
+    if (!window.confirm(`Delete "${project.name}" project?`)) return;
+
+    setProjects((prev) => prev.filter((p) => p.id !== id));
   };
 
   return (
     <div className="projects-page">
-
       <h2>Projects</h2>
 
+      {/* ✅ CREATE BOX */}
       <div className="create-box">
         <input
           type="text"
@@ -497,24 +548,27 @@ function Projects({ projects, setProjects }) {
         <button onClick={createProject}>Create</button>
       </div>
 
+      {/* ✅ PROJECT LIST */}
       <div className="projects-grid">
         {projects.length === 0 ? (
           <p>No projects</p>
         ) : (
           projects.map((p) => (
             <div key={p.id} className="project-card">
-              <button onClick={() => deleteProject(p.id)}>✕</button>
+              <button
+                className="delete-btn"
+                onClick={() => deleteProject(p.id)}
+              >
+                ✕
+              </button>
               <h3>{p.name}</h3>
             </div>
           ))
         )}
       </div>
-
     </div>
   );
 }
-
-
 
 
 
@@ -736,8 +790,12 @@ import {
 
 
 
-function SprintBoard({ tasks, setTasks }) {
-
+function SprintBoard({ tasks, setTasks,projects }) {
+const statusLabels = {
+  todo: "To Do",
+  in_progress: "In Progress",
+  done: "Done"
+};
   const [sprints, setSprints] = useState([]);
   const [name, setName] = useState("");
   const [start, setStart] = useState("");
@@ -747,7 +805,30 @@ function SprintBoard({ tasks, setTasks }) {
   const [team, setTeam] = useState([]);
   const [memberName, setMemberName] = useState("");
   const [designation, setDesignation] = useState("");
-
+const roles = [
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "UI Designer",
+  "UX Designer",
+  "QA Tester",
+  "Automation Tester",
+  "DevOps Engineer",
+  "Project Manager",
+ 
+  "Business Analyst",
+  "Product Owner",
+  "Team Lead",
+  "Tech Lead",
+  "Support Engineer",
+  "Database Administrator",
+  "Security Engineer",
+  "Cloud Engineer",
+  "Mobile App Developer",
+  "AI/ML Engineer",
+  "Data Analyst",
+  "Intern"
+];
   // ✅ LOAD DATA (FIXED)
   useEffect(() => {
     const sprintData = JSON.parse(localStorage.getItem("sprintData")) || [];
@@ -783,38 +864,54 @@ function SprintBoard({ tasks, setTasks }) {
 
   // CREATE SPRINT (FIXED SAVE)
   const createSprint = () => {
-    if (!name || !start || !end) return;
+  if (!name || !start || !end || !project) {
+    alert("All fields required");
+    return;
+  }
 
-    const newSprint = {
-      id: Date.now(),
-      name,
-      start,
-      end,
-      status: "PLANNED"
-    };
-
-    const updated = [...sprints, newSprint];
-
-    setSprints(updated);
-    localStorage.setItem("sprintData", JSON.stringify(updated)); // ✅ SAVE
-
-    setSelectedSprint(newSprint);
-
-    setName("");
-    setStart("");
-    setEnd("");
+     const newSprint = {
+    id: Date.now(),
+    name,
+    start,
+    end,
+    project_id: Number(project), // ✅ IMPORTANT (SAVE PROJECT)
+    status: "PLANNED"
   };
+
+     const updated = [...sprints, newSprint];
+
+  setSprints(updated);
+  localStorage.setItem("sprintData", JSON.stringify(updated));
+
+  setSelectedSprint(newSprint);
+
+  setName("");
+  setStart("");
+  setEnd("");
+  setProject(""); // reset dropdown
+};
 
   // DELETE SPRINT
   const deleteSprint = (id) => {
-    const updated = sprints.filter(s => s.id !== id);
-    setSprints(updated);
+  const sprint = sprints.find(s => s.id === id);
 
-    if (selectedSprint?.id === id) {
-      setSelectedSprint(updated[0] || null);
-    }
-  };
+  const confirmDelete = window.confirm(
+    `Are you sure you want to delete "${sprint?.name}" sprint?`
+  );
 
+  if (!confirmDelete) return; // ❌ stop if cancel
+
+  const updated = sprints.filter(s => s.id !== id);
+  setSprints(updated);
+
+  // ✅ update localStorage also
+  localStorage.setItem("sprintData", JSON.stringify(updated));
+
+  // ✅ handle selected sprint
+  if (selectedSprint?.id === id) {
+    setSelectedSprint(updated[0] || null);
+  }
+};
   // ADD MEMBER
   const addMember = () => {
     if (!memberName || !designation) return;
@@ -875,7 +972,7 @@ function SprintBoard({ tasks, setTasks }) {
   const sprintTasks = tasks.filter(
     t => t.sprint_id === selectedSprint?.id
   );
-
+const [project, setProject] = useState("");
   // BURNDOWN
   const burndown = [
     { day: "Start", tasks: sprintTasks.length },
@@ -891,9 +988,27 @@ function SprintBoard({ tasks, setTasks }) {
       {/* CREATE */}
       <div className="create-sprint">
         <input placeholder="Sprint name" value={name} onChange={e => setName(e.target.value)} />
+        <select
+  value={project}
+  onChange={e => setProject(e.target.value)}
+>
+  <option value="">Select Project</option>
+
+  {projects.length === 0 ? (
+    <option disabled>No projects</option>
+  ) : (
+    projects.map(p => (
+      <option key={p.id} value={p.id}>
+        {p.name}
+      </option>
+    ))
+  )}
+</select>
         <input type="date" value={start} onChange={e => setStart(e.target.value)} />
         <input type="date" value={end} onChange={e => setEnd(e.target.value)} />
-        <button onClick={createSprint}>Create</button>
+         <div className="create-btn-center">
+    <button onClick={createSprint}>Create</button>
+  </div>
       </div>
 
       {/* SPRINT LIST */}
@@ -905,6 +1020,9 @@ function SprintBoard({ tasks, setTasks }) {
           >
             <h4>{s.name}</h4>
             <p>{s.status}</p>
+            <p style={{ fontSize: "10px", color: "gray" }}>
+  {projects.find(p => p.id == s.project_id)?.name || "No Project"}
+</p>
             <small>{s.start} → {s.end}</small>
 
             <p style={{ fontSize: "10px", color: "gray" }}></p>
@@ -936,14 +1054,21 @@ function SprintBoard({ tasks, setTasks }) {
             />
 
             <select
-              value={designation}
-              onChange={e => setDesignation(e.target.value)}
-            >
-              <option value="">Select Role</option>
-              <option value="Developer">Developer</option>
-              <option value="Designer">Designer</option>
-              <option value="Tester">Tester</option>
-            </select>
+  value={designation}
+  onChange={e => setDesignation(e.target.value)}
+>
+  <option value="">Select Role</option>
+
+  {roles.map((role, i) => (
+    <option key={i} value={role}>
+      {role}
+    </option>
+  ))}
+</select>
+<input
+  placeholder="Or type custom role"
+  onChange={e => setDesignation(e.target.value)}
+/>
 
             <button onClick={addMember}>Add</button>
           </div>
@@ -999,7 +1124,7 @@ function SprintBoard({ tasks, setTasks }) {
                 <Droppable droppableId={col} key={col}>
                   {(p) => (
                     <div ref={p.innerRef} {...p.droppableProps} className="column">
-                      <h4>{col}</h4>
+                      <h4>{statusLabels[col]}</h4>
 
                       {sprintTasks.filter(t => t.status === col).map((t, i) => (
                         <Draggable key={t.id} draggableId={t.id.toString()} index={i}>
@@ -1186,6 +1311,11 @@ const normalizeStatus = (status) => {
         </div>
       )}
 
+
+
+
+
+
       {/* ================= LIST ================= 
       {view === "list" && (
         <div className="list-view">
@@ -1214,6 +1344,19 @@ const normalizeStatus = (status) => {
       )}*/}
 
  {view === "list" && (
+
+
+
+
+
+
+
+     
+
+
+
+
+
         <div className="list-view">
           <table className="task-table">
             <thead>
@@ -1296,7 +1439,7 @@ const normalizeStatus = (status) => {
         <div className="kanban">
           {["todo","in_progress","done"].map(col => (
             <div key={col} className="column">
-              <h4>{col}</h4>
+             <h4>{statusLabels[col]}</h4>
 
               {tasks.filter(t => t.status === col).map(t => (
                 <div key={t.id} className="task-card">

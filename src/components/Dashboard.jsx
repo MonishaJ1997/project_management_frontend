@@ -13,38 +13,44 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [dashboard, setDashboard] = useState({});
  
-const [tasks, setTasks] = useState(() => {
-  const saved = localStorage.getItem("tasks");
-  return saved ? JSON.parse(saved) : [];
-});
-useEffect(() => {
-  localStorage.setItem("tasks", JSON.stringify(tasks));
-}, [tasks]);
-  const [projects, setProjects] = useState(() => {
-  const saved = localStorage.getItem("projects");
-  return saved ? JSON.parse(saved) : [];
-});
+const [tasks, setTasks] = useState([]);
+const fetchAllData = async () => {
+  try {
+    const [dashRes, taskRes, projectRes, sprintRes, memberRes] =
+      await Promise.all([
+        BASE_URL.get("dashboard/"),
+        BASE_URL.get("tasks/"),
+        BASE_URL.get("projects/"),
+        BASE_URL.get("sprints/"),
+        BASE_URL.get("members/")
+      ]);
+
+    setDashboard(dashRes.data);
+    setTasks(taskRes.data);
+    setProjects(projectRes.data);
+    setSprints(sprintRes.data);
+    setMembers(memberRes.data);
+
+    // optional default sprint selection
+    if (sprintRes.data.length > 0) {
+      setSelectedSprint(sprintRes.data[0]);
+    }
+
+  } catch (err) {
+    console.log(err);
+  }
+};
+ const [projects, setProjects] = useState([]);
+
   const [showModal, setShowModal] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user"));
 
-  useEffect(() => {
-    fetchAllData();
-  }, []);
+useEffect(() => {
+  fetchAllData();
+}, []);
 
-  const fetchAllData = async () => {
-    try {
-      const dashRes = await BASE_URL.get("dashboard/");
-      
-      
 
-      setDashboard(dashRes.data);
-      
-     
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
   // ✅ DRAG UPDATE
   const onDragEnd = async (result) => {
@@ -304,31 +310,48 @@ function Card({ title, value }) {
 
 ////////////////////////////////////////////////////
 
-function Tasks({ tasks, setTasks, onDragEnd }) {
+function Tasks({ tasks, setTasks }) {
 
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
   // ✅ DELETE (NO BACKEND)
-  const deleteTask = (id) => {
-    if (!window.confirm("Delete this task?")) return;
+  const deleteTask = async (id) => {
+  if (!window.confirm("Delete this task?")) return;
+
+  try {
+    await BASE_URL.delete(`tasks/${id}/`);
     setTasks(prev => prev.filter(t => t.id !== id));
-  };
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   // ✅ UPDATE STATUS (Start / Done / Back)
-  const updateStatus = (id, status) => {
+  const updateStatus = async (id, status) => {
+  try {
+    await BASE_URL.patch(`tasks/${id}/`, { status });
+
     setTasks(prev =>
       prev.map(t =>
         t.id === id ? { ...t, status } : t
       )
     );
-  };
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   // ✅ DRAG DROP
-  const handleDragEnd = (result) => {
-    if (!result.destination) return;
+  const onDragEnd = async (result) => {
+  if (!result.destination) return;
 
-    const { draggableId, destination } = result;
+  const { destination, draggableId } = result;
+
+  try {
+    await BASE_URL.patch(`tasks/${draggableId}/`, {
+      status: destination.droppableId,
+    });
 
     setTasks(prev =>
       prev.map(t =>
@@ -337,7 +360,10 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
           : t
       )
     );
-  };
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   const cols = [
     { key: "todo", title: "To Do" },
@@ -382,7 +408,7 @@ function Tasks({ tasks, setTasks, onDragEnd }) {
       </div>
 
       {/* BOARD */}
-      <DragDropContext onDragEnd={handleDragEnd}>
+     <DragDropContext onDragEnd={onDragEnd}>
         <div className="kanban">
 
           {cols.map(col => (
@@ -499,30 +525,34 @@ function Projects({ projects, setProjects }) {
   }, [projects]);
 
   // ✅ CREATE PROJECT (with duplicate check)
-  const createProject = () => {
-    if (!newProject.trim()) {
-      alert("Enter project name");
-      return;
-    }
+  const createProject = async () => {
+  if (!newProject.trim()) {
+    alert("Enter project name");
+    return;
+  }
 
-    // 🔥 CHECK DUPLICATE (case-insensitive)
-    const isDuplicate = projects.some(
-      (p) => p.name.toLowerCase() === newProject.toLowerCase()
-    );
+  // ✅ Duplicate check
+  const isDuplicate = projects.some(
+    (p) => p.name.toLowerCase() === newProject.toLowerCase()
+  );
 
-    if (isDuplicate) {
-      alert("Project name already exists");
-      return;
-    }
+  if (isDuplicate) {
+    alert("Project name already exists");
+    return;
+  }
 
-    const project = {
-      id: Date.now(),
-      name: newProject.trim(),
-    };
+  try {
+    const res = await BASE_URL.post("projects/", {
+      name: newProject
+    });
 
-    setProjects((prev) => [...prev, project]);
+    setProjects(prev => [...prev, res.data]);
     setNewProject("");
-  };
+
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   // ✅ DELETE PROJECT (with popup + project name)
   const deleteProject = (id) => {
@@ -680,25 +710,42 @@ function CreateTaskModal({ onClose, onCreate, projects }) {
   });
 
   // ✅ CREATE TASK (FRONTEND ONLY)
-  const handleSubmit = () => {
-    if (!form.title || !form.project) {
-      alert("Title & Project required");
-      return;
-    }
+  
+const handleSubmit = async () => {
+  if (!form.title || !form.project) {
+    alert("Title & Project required");
+    return;
+  }
 
-    const newTask = {
-      id: Date.now(),
-      title: form.title,
-      description: form.description,
-      status: form.status,
-      priority: form.priority,
-      project: form.project,
-      created_at: new Date().toISOString()
-    };
-
-    onCreate(newTask);
-    onClose();
+  const payload = {
+    title: form.title,
+    description: form.description || "",
+    status: form.status || "todo",
+    priority: form.priority || "medium",
+    project: Number(form.project),
+    assigned_to: null 
   };
+
+  console.log("SENDING:", payload);
+
+  try {
+    const res = await BASE_URL.post("tasks/", payload);
+
+    console.log("SUCCESS:", res.data);
+
+    onCreate(res.data);
+    onClose();
+
+  } catch (err) {
+    console.log("ERROR:", err.response?.data || err.message);
+
+    alert(
+      err.response?.data
+        ? JSON.stringify(err.response.data)
+        : "Task creation failed"
+    );
+  }
+};
 
   return (
     <div className="modal">
@@ -786,380 +833,320 @@ import {
 
 
 
+function SprintBoard({ tasks, setTasks, projects }) {
+const fetchTasks = async () => {
+  try {
+    const res = await BASE_URL.get("tasks/");
+    setTasks(res.data);
+  } catch (err) {
+    console.log(err);
+  }
+};
+  // ================= STATE =================
+  const [sprints, setSprints] = useState([]);
+  const [selectedSprint, setSelectedSprint] = useState(null);
 
+  const [name, setName] = useState("");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [project, setProject] = useState("");
 
+  const [members, setMembers] = useState([]);
+  const [memberName, setMemberName] = useState("");
+  const [role, setRole] = useState("");
 
+  // ================= LOAD DATA =================
+  useEffect(() => {
+    fetchSprints();
+    fetchMembers();
+  }, []);
 
-function SprintBoard({ tasks, setTasks,projects }) {
+  const fetchSprints = async () => {
+    try {
+      const res = await BASE_URL.get("sprints/");
+      setSprints(res.data);
+      if (res.data.length > 0) {
+        setSelectedSprint(res.data[0]);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchMembers = async () => {
+    try {
+      const res = await BASE_URL.get("members/");
+      setMembers(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 const statusLabels = {
   todo: "To Do",
   in_progress: "In Progress",
   done: "Done"
 };
-  const [sprints, setSprints] = useState([]);
-  const [name, setName] = useState("");
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
-  const [selectedSprint, setSelectedSprint] = useState(null);
-
-  const [team, setTeam] = useState([]);
-  const [memberName, setMemberName] = useState("");
-  const [designation, setDesignation] = useState("");
-const roles = [
-  "Frontend Developer",
-  "Backend Developer",
-  "Full Stack Developer",
-  "UI Designer",
-  "UX Designer",
-  "QA Tester",
-  "Automation Tester",
-  "DevOps Engineer",
-  "Project Manager",
- 
-  "Business Analyst",
-  "Product Owner",
-  "Team Lead",
-  "Tech Lead",
-  "Support Engineer",
-  "Database Administrator",
-  "Security Engineer",
-  "Cloud Engineer",
-  "Mobile App Developer",
-  "AI/ML Engineer",
-  "Data Analyst",
-  "Intern"
-];
-  // ✅ LOAD DATA (FIXED)
-  useEffect(() => {
-    const sprintData = JSON.parse(localStorage.getItem("sprintData")) || [];
-    const teamData = JSON.parse(localStorage.getItem("teamData")) || [];
-    const selected = JSON.parse(localStorage.getItem("selectedSprint"));
-
-    setSprints(sprintData);
-    setTeam(teamData);
-
-    // ✅ FIX: restore selected sprint correctly
-    if (selected) {
-      const found = sprintData.find(s => s.id === selected.id);
-      setSelectedSprint(found || sprintData[0] || null);
-    } else if (sprintData.length > 0) {
-      setSelectedSprint(sprintData[0]);
+  // ================= CREATE SPRINT =================
+  const createSprint = async () => {
+    if (!name || !start || !end || !project) {
+      alert("All fields required");
+      return;
     }
 
-  }, []);
+    try {
+      const res = await BASE_URL.post("sprints/", {
+        name,
+        project,
+        start_date: start,
+        end_date: end,
+        status: "PLANNED"
+      });
 
-  // ✅ SAVE SELECTED SPRINT
-  useEffect(() => {
-    if (selectedSprint) {
-      localStorage.setItem("selectedSprint", JSON.stringify(selectedSprint));
+      setSprints(prev => [...prev, res.data]);
+      setSelectedSprint(res.data);
+
+      setName("");
+      setStart("");
+      setEnd("");
+      setProject("");
+
+    } catch (err) {
+      console.log(err);
     }
-  }, [selectedSprint]);
+  };
 
-  // ✅ SAVE SPRINTS (FIXED - prevent overwrite empty)
-  useEffect(() => {
-    if (sprints.length > 0) {
-      localStorage.setItem("sprintData", JSON.stringify(sprints));
+  // ================= DELETE SPRINT =================
+  const deleteSprint = async (id) => {
+    if (!window.confirm("Delete this sprint?")) return;
+
+    try {
+      await BASE_URL.delete(`sprints/${id}/`);
+
+      const updated = sprints.filter(s => s.id !== id);
+      setSprints(updated);
+
+      if (selectedSprint?.id === id) {
+        setSelectedSprint(updated[0] || null);
+      }
+
+    } catch (err) {
+      console.log(err);
     }
-  }, [sprints]);
-
-  // CREATE SPRINT (FIXED SAVE)
-  const createSprint = () => {
-  if (!name || !start || !end || !project) {
-    alert("All fields required");
-    return;
-  }
-
-     const newSprint = {
-    id: Date.now(),
-    name,
-    start,
-    end,
-    project_id: Number(project), // ✅ IMPORTANT (SAVE PROJECT)
-    status: "PLANNED"
   };
 
-     const updated = [...sprints, newSprint];
+  // ================= CREATE MEMBER =================
+  const createMember = async () => {
+    if (!memberName || !role) {
+      alert("Enter name and role");
+      return;
+    }
 
-  setSprints(updated);
-  localStorage.setItem("sprintData", JSON.stringify(updated));
+    try {
+      const res = await BASE_URL.post("members/", {
+        name: memberName,
+        role: role
+      });
 
-  setSelectedSprint(newSprint);
+      setMembers(prev => [...prev, res.data]);
 
-  setName("");
-  setStart("");
-  setEnd("");
-  setProject(""); // reset dropdown
-};
+      setMemberName("");
+      setRole("");
 
-  // DELETE SPRINT
-  const deleteSprint = (id) => {
-  const sprint = sprints.find(s => s.id === id);
-
-  const confirmDelete = window.confirm(
-    `Are you sure you want to delete "${sprint?.name}" sprint?`
-  );
-
-  if (!confirmDelete) return; // ❌ stop if cancel
-
-  const updated = sprints.filter(s => s.id !== id);
-  setSprints(updated);
-
-  // ✅ update localStorage also
-  localStorage.setItem("sprintData", JSON.stringify(updated));
-
-  // ✅ handle selected sprint
-  if (selectedSprint?.id === id) {
-    setSelectedSprint(updated[0] || null);
-  }
-};
-  // ADD MEMBER
-  const addMember = () => {
-    if (!memberName || !designation) return;
-
-    const updated = [
-      ...team,
-      { id: Date.now(), name: memberName, role: designation }
-    ];
-
-    setTeam(updated);
-    localStorage.setItem("teamData", JSON.stringify(updated));
-
-    setMemberName("");
-    setDesignation("");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  // DELETE MEMBER
-  const deleteMember = (id) => {
-    const member = team.find(m => m.id === id);
+  // ================= ASSIGN TASK =================
+ const assignTask = async (taskId, memberId) => {
+  try {
+    const payload = {
+      assigned_to: memberId === "" ? null : Number(memberId)
+    };
 
-    const updatedTeam = team.filter(m => m.id !== id);
-    setTeam(updatedTeam);
-    localStorage.setItem("teamData", JSON.stringify(updatedTeam));
+    console.log("PATCH PAYLOAD:", payload);
 
-    setTasks(tasks.map(t =>
-      t.assigned_to === member?.name
-        ? { ...t, assigned_to: "" }
-        : t
-    ));
-  };
+    const res = await BASE_URL.patch(`tasks/${taskId}/`, payload);
 
-  // ASSIGN TASK (OPTIONAL SAVE FIX)
-  const assignTask = (taskId, sprintId, member) => {
-    const updated = tasks.map(t =>
-      t.id === taskId
-        ? { ...t, sprint_id: sprintId, assigned_to: member }
-        : t
+    setTasks(prev =>
+      prev.map(t => (t.id === taskId ? res.data : t))
     );
 
-    setTasks(updated);
-    localStorage.setItem("tasksData", JSON.stringify(updated)); // ✅ persist tasks
-  };
+  } catch (err) {
+    console.log("ERROR:", err.response?.data || err);
+  }
+};
 
-  // DRAG
-  const onDragEnd = (result) => {
+const deleteMember = async (id) => {
+  if (!window.confirm("Delete this member?")) return;
+
+  try {
+    await BASE_URL.delete(`members/${id}/`);
+
+    // remove from UI
+    setMembers(prev => prev.filter(m => m.id !== id));
+
+  } catch (err) {
+    console.log(err);
+  }
+};
+  // ================= DRAG =================
+  const onDragEnd = async (result) => {
     if (!result.destination) return;
 
-    const updated = tasks.map(t =>
-      t.id.toString() === result.draggableId
-        ? { ...t, status: result.destination.droppableId }
-        : t
-    );
+    try {
+      const res = await BASE_URL.put(`tasks/${result.draggableId}/`, {
+        status: result.destination.droppableId
+      });
 
-    setTasks(updated);
-    localStorage.setItem("tasksData", JSON.stringify(updated)); // ✅ persist
+      setTasks(prev =>
+        prev.map(t =>
+          t.id.toString() === result.draggableId ? res.data : t
+        )
+      );
+
+    } catch (err) {
+      console.log(err);
+    }
   };
 
+  // ================= FILTER =================
   const sprintTasks = tasks.filter(
-    t => t.sprint_id === selectedSprint?.id
-  );
-const [project, setProject] = useState("");
-  // BURNDOWN
-  const burndown = [
-    { day: "Start", tasks: sprintTasks.length },
-    { day: "Mid", tasks: sprintTasks.filter(t => t.status !== "done").length },
-    { day: "End", tasks: sprintTasks.filter(t => t.status === "done").length }
-  ];
+  t => Number(t.sprint) === Number(selectedSprint?.id)
+);
 
+  // ================= UI =================
   return (
     <div className="sprint-page">
 
       <h2>Sprint Management</h2>
 
-      {/* CREATE */}
+      {/* CREATE SPRINT */}
       <div className="create-sprint">
-        <input placeholder="Sprint name" value={name} onChange={e => setName(e.target.value)} />
-        <select
-  value={project}
-  onChange={e => setProject(e.target.value)}
->
-  <option value="">Select Project</option>
+        <input
+          placeholder="Sprint name"
+          value={name}
+          onChange={e => setName(e.target.value)}
+        />
 
-  {projects.length === 0 ? (
-    <option disabled>No projects</option>
-  ) : (
-    projects.map(p => (
-      <option key={p.id} value={p.id}>
-        {p.name}
-      </option>
-    ))
-  )}
-</select>
+        <select value={project} onChange={e => setProject(e.target.value)}>
+          <option value="">Select Project</option>
+          {projects.map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+
         <input type="date" value={start} onChange={e => setStart(e.target.value)} />
         <input type="date" value={end} onChange={e => setEnd(e.target.value)} />
-         <div className="create-btn-center">
-    <button onClick={createSprint}>Create</button>
-  </div>
+
+        <button onClick={createSprint}>Create</button>
       </div>
 
       {/* SPRINT LIST */}
       <div className="sprint-list">
         {sprints.map(s => (
-          <div key={s.id}
+          <div
+            key={s.id}
             className={`sprint-card ${selectedSprint?.id === s.id ? "active" : ""}`}
             onClick={() => setSelectedSprint(s)}
           >
             <h4>{s.name}</h4>
             <p>{s.status}</p>
-            <p style={{ fontSize: "10px", color: "gray" }}>
-  {projects.find(p => p.id == s.project_id)?.name || "No Project"}
-</p>
-            <small>{s.start} → {s.end}</small>
+            <small>{s.start_date} → {s.end_date}</small>
 
-            <p style={{ fontSize: "10px", color: "gray" }}></p>
-
-            <button
-              className="delete-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                deleteSprint(s.id);
-              }}
-            >
+            <button onClick={(e) => {
+              e.stopPropagation();
+              deleteSprint(s.id);
+            }}>
               ✕
             </button>
           </div>
         ))}
       </div>
 
-      {!selectedSprint && <p></p>}
+      {/* CREATE MEMBER */}
+      <h3>Create Member</h3>
+      <div className="member-create">
+        <input
+          placeholder="Member Name"
+          value={memberName}
+          onChange={e => setMemberName(e.target.value)}
+        />
 
+        <input
+          placeholder="Role"
+          value={role}
+          onChange={e => setRole(e.target.value)}
+        />
+
+        <button onClick={createMember}>Add Member</button>
+      </div>
+
+      {/* MEMBER LIST */}
+     <div className="member-list">
+  {members.map(m => (
+    <div key={m.id} className="member-card">
+      {m.name} - {m.role}
+
+      <button
+        onClick={() => deleteMember(m.id)}
+        style={{ marginLeft: "10px", color: "red" }}
+      >
+        ✕
+      </button>
+    </div>
+  ))}
+</div>
+      {/* ASSIGN TASK */}
       {selectedSprint && (
         <>
-          <h3>Team</h3>
+          <h3>Assign Tasks</h3>
 
-          <div className="team-create">
-            <input
-              value={memberName}
-              onChange={e => setMemberName(e.target.value)}
-              placeholder="Enter member name"
-            />
+          <div className="task-assign">
+            {tasks.map(t => (
+             <div key={t.id}>
+  {t.title}
 
-            <select
-  value={designation}
-  onChange={e => setDesignation(e.target.value)}
+  {t.assigned_to_name && (
+  <span style={{ marginLeft: "10px", color: "green" }}>
+    👤 {t.assigned_to_name}
+  </span>
+)}
+
+ <select
+  value={t.assigned_to || ""}
+ onChange={(e) => {
+  const value = e.target.value;
+
+  console.log("RAW:", value);
+  console.log("TYPE:", typeof value);
+
+  const finalValue = value === "" ? null : Number(value);
+
+  console.log("FINAL:", finalValue, typeof finalValue);
+
+  assignTask(t.id, finalValue);
+}}
 >
-  <option value="">Select Role</option>
+  <option value="">Assign</option>
 
-  {roles.map((role, i) => (
-    <option key={i} value={role}>
-      {role}
+  {members.map(m => (
+    <option key={m.id} value={m.id}>
+      {m.name}
     </option>
   ))}
 </select>
-<input
-  placeholder="Or type custom role"
-  onChange={e => setDesignation(e.target.value)}
-/>
-
-            <button onClick={addMember}>Add</button>
-          </div>
-
-          <div className="team-list">
-            {team.map(m => (
-              <div key={m.id} className="team-avatar">
-                <span className="avatar-circle">
-                  {m.name?.charAt(0).toUpperCase()}
-                </span>
-                <span>{m.name}</span>
-                <small>{m.role}</small>
-
-                <button
-                  className="member-delete"
-                  onClick={() => deleteMember(m.id)}
-                >
-                  ✕
-                </button>
-              </div>
+</div>
             ))}
           </div>
 
-          <h3>Workload</h3>
-          <div className="workload">
-            {team.map(m => {
-              const count = sprintTasks.filter(t => t.assigned_to === m.name).length;
-              return (
-                <div key={m.id} className="work-card">
-                  {m.name} <br /> {count} tasks
-                </div>
-              );
-            })}
-          </div>
-
-          <h3>Assign Tasks</h3>
-          <div className="task-assign">
-            {tasks.map(t => (
-              <div key={t.id} className="assign-card">
-                <span>{t.title}</span>
-                <select onChange={e => assignTask(t.id, selectedSprint.id, e.target.value)}>
-                  <option>Assign</option>
-                  {team.map(m => <option key={m.id}>{m.name}</option>)}
-                </select>
-              </div>
-            ))}
-          </div>
-
-          <h3>Sprint Board</h3>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="kanban">
-              {["todo", "in_progress", "done"].map(col => (
-                <Droppable droppableId={col} key={col}>
-                  {(p) => (
-                    <div ref={p.innerRef} {...p.droppableProps} className="column">
-                      <h4>{statusLabels[col]}</h4>
-
-                      {sprintTasks.filter(t => t.status === col).map((t, i) => (
-                        <Draggable key={t.id} draggableId={t.id.toString()} index={i}>
-                          {(p) => (
-                            <div ref={p.innerRef} {...p.draggableProps} {...p.dragHandleProps} className="task-card">
-                              {t.title}
-                              <p>{t.assigned_to || "Unassigned"}</p>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-
-                      {p.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              ))}
-            </div>
-          </DragDropContext>
-
-          <h3>Burndown Chart</h3>
-          <ResponsiveContainer height={200}>
-            <LineChart data={burndown}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="tasks" stroke="#6366f1" />
-            </LineChart>
-          </ResponsiveContainer>
+          
         </>
       )}
+
     </div>
   );
 }
-
 
 
 
@@ -1385,29 +1372,11 @@ const normalizeStatus = (status) => {
 <td>
   <div className="user">
     <div className="avatar">
-      {(() => {
-        const userObj = users.find(u => u.id === t.assignee_id);
-
-        const name =
-          typeof t.assigned_to === "string" ? t.assigned_to :
-          typeof t.assignee === "string" ? t.assignee :
-          userObj?.username || "Unassigned";
-
-        return name.charAt(0).toUpperCase();
-      })()}
+      {(t.assigned_to_name || "U")[0].toUpperCase()}
     </div>
 
     <span className="assignee-name">
-      {(() => {
-        const userObj = users.find(u => u.id === t.assignee_id);
-
-        return (
-          (typeof t.assigned_to === "string" && t.assigned_to) ||
-          (typeof t.assignee === "string" && t.assignee) ||
-          userObj?.username ||
-          "Unassigned"
-        );
-      })()}
+      {t.assigned_to_name || "Unassigned"}
     </span>
   </div>
 </td>
@@ -1480,15 +1449,24 @@ const normalizeStatus = (status) => {
 
 
 
-function CalendarView({ tasks }) {
+function CalendarView({ tasks = [] }) {
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [sprints, setSprints] = useState([]);
 
-  // ✅ LOAD SPRINTS
   useEffect(() => {
-    const sprintData = JSON.parse(localStorage.getItem("sprintData")) || [];
-    setSprints(sprintData);
+    fetchSprints();
   }, []);
+
+  const fetchSprints = async () => {
+    try {
+      const res = await BASE_URL.get("sprints/");
+      console.log("SPRINTS:", res.data); // 🔥 DEBUG
+      setSprints(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -1496,76 +1474,97 @@ function CalendarView({ tasks }) {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const prevMonth = () => {
+  const prevMonth = () =>
     setCurrentDate(new Date(year, month - 1, 1));
-  };
 
-  const nextMonth = () => {
+  const nextMonth = () =>
     setCurrentDate(new Date(year, month + 1, 1));
+
+  // ✅ FIX: strict match
+  const getSprint = (id) => {
+    if (!id) return null;
+    return sprints.find(s => Number(s.id) === Number(id)) || null;
   };
 
-  // ✅ GET FULL SPRINT OBJECT
-  const getSprint = (sprintId) => {
-    return sprints.find(s => Number(s.id) === Number(sprintId));
-  };
-
-  // ✅ FORMAT DATE
   const formatDate = (date) => {
-    if (!date) return "";
+    if (!date) return "-";
     return new Date(date).toLocaleDateString("en-IN", {
       day: "2-digit",
-      month: "short"
+      month: "short",
     });
   };
 
-  // ✅ GET TASKS FOR DAY (based on created date)
-  const getTasksForDay = (day) => {
-    return tasks.filter((t) => {
-      if (!t.created_at) return false;
-      const d = new Date(t.created_at);
-      return (
-        d.getDate() === day &&
-        d.getMonth() === month &&
-        d.getFullYear() === year
-      );
-    });
-  };
+  // ✅ GROUP TASKS
+  const groupedTasks = {};
+
+  tasks.forEach((t) => {
+    console.log("TASK DATA:", t); // 🔥 DEBUG
+
+    const dateStr = t.due_date || t.created_at;
+    if (!dateStr) return;
+
+    const d = new Date(dateStr);
+    if (isNaN(d)) return;
+
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+    if (!groupedTasks[key]) groupedTasks[key] = [];
+    groupedTasks[key].push(t);
+  });
 
   const days = [];
 
-  // EMPTY CELLS
+  // empty cells
   for (let i = 0; i < firstDay; i++) {
-    days.push(<div key={"empty-" + i} className="calendar-cell empty"></div>);
+    days.push(<div key={"e" + i} className="calendar-cell empty"></div>);
   }
 
-  // DAYS
+  // actual days
   for (let d = 1; d <= daysInMonth; d++) {
-    const dayTasks = getTasksForDay(d);
+    const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const dayTasks = groupedTasks[key] || [];
 
     days.push(
       <div key={d} className="calendar-cell">
         <div className="date">{d}</div>
 
+        {dayTasks.length === 0 && (
+          <div style={{ fontSize: "10px", color: "#ccc" }}>
+            No tasks
+          </div>
+        )}
+
         {dayTasks.map((t) => {
-          const sprint = getSprint(t.sprint_id);
+          const sprint = getSprint(t.sprint);
 
           return (
             <div key={t.id} className="task-pill">
+
+              {/* TASK */}
               <strong>{t.title}</strong>
 
-              <div style={{ fontSize: "10px" }}>
-                🏁 {sprint?.name || "No Sprint"}
+              {/* 🔥 FORCE SHOW RAW SPRINT ID */}
+              <div style={{ fontSize: "10px", color: "red" }}>
+                Sprint ID: {t.sprint || "NULL"}
               </div>
 
+              {/* ✅ Sprint Name */}
+              <div style={{ fontSize: "11px", color: "blue" }}>
+                🏁 {sprint ? sprint.name : "No Sprint"}
+              </div>
+
+              {/* ✅ Sprint Dates */}
               <div style={{ fontSize: "10px" }}>
                 📅 {sprint
-                  ? `${formatDate(sprint.start)} → ${formatDate(sprint.end)}`
-                  : "-"}
+                  ? `${formatDate(sprint.start_date)} → ${formatDate(sprint.end_date)}`
+                  : "No Dates"}
               </div>
 
+              {/* USER */}
               <div style={{ fontSize: "10px" }}>
-                👤 {t.assigned_to || "Unassigned"}
+                👤 {t.assigned_to_name || "Unassigned"}
               </div>
+
             </div>
           );
         })}
@@ -1576,27 +1575,21 @@ function CalendarView({ tasks }) {
   return (
     <div className="calendar-page">
 
-      {/* HEADER */}
       <div className="calendar-header">
         <button onClick={prevMonth}>{"<"}</button>
+
         <h3>
           {currentDate.toLocaleString("default", { month: "long" })} {year}
         </h3>
+
         <button onClick={nextMonth}>{">"}</button>
       </div>
 
-      {/* WEEK NAMES */}
       <div className="calendar-grid header">
-        <div>Sun</div>
-        <div>Mon</div>
-        <div>Tue</div>
-        <div>Wed</div>
-        <div>Thu</div>
-        <div>Fri</div>
-        <div>Sat</div>
+        <div>Sun</div><div>Mon</div><div>Tue</div>
+        <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
       </div>
 
-      {/* DAYS */}
       <div className="calendar-grid">{days}</div>
     </div>
   );

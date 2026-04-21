@@ -2468,3 +2468,192 @@ body {
   color: #6366f1;
   border: 2px solid #6366f1;
 }
+
+
+
+/* PAGE */
+
+
+
+
+
+
+/* ===== PAGE ===== */
+.sprint-page {
+  padding: 20px;
+  font-family: "Segoe UI", sans-serif;
+  background: #f5f7fb;
+}
+
+/* ===== TITLE ===== */
+.sprint-page h2 {
+  margin-bottom: 20px;
+}
+
+/* ===== CREATE SPRINT ===== */
+.create-sprint {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.create-sprint input,
+.create-sprint select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.create-sprint button {
+  padding: 8px 15px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.create-sprint button:hover {
+  background: #0056b3;
+}
+
+/* ===== SPRINT LIST ===== */
+.sprint-list {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.sprint-card {
+  min-width: 180px;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  transition: 0.2s;
+}
+
+
+
+.sprint-card.active {
+  border: 2px solid #007bff;
+}
+
+.sprint-card h4 {
+  margin: 0;
+}
+
+.sprint-card small {
+  font-size: 12px;
+  color: gray;
+}
+
+.sprint-card button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  border: none;
+  background: red;
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* ===== MEMBER SECTION ===== */
+.member-create {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.member-create input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.member-create button {
+  padding: 8px 12px;
+  background: green;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+
+.member-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.member-card {
+  background: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/* ===== TASK ASSIGN ===== */
+.task-assign {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.task-assign > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.task-assign select {
+  padding: 6px;
+  border-radius: 6px;
+}
+
+/* ===== KANBAN BOARD ===== */
+.kanban {
+  display: flex;
+  gap: 15px;
+}
+
+.kanban > div {
+  flex: 1;
+  background: #f1f3f6;
+  padding: 10px;
+  border-radius: 10px;
+  min-height: 300px;
+}
+
+/* COLUMN TITLE */
+.kanban h4 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* TASK CARD */
+
+
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .kanban {
+    flex-direction: column;
+  }
+
+  .create-sprint {
+    flex-direction: column;
+  }
+
+  .member-create {
+    flex-direction: column;
+  }
+}

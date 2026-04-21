@@ -64,8 +64,9 @@ function AuthModal({ isOpen, onClose, onLogin }) {
 
         localStorage.setItem("access", res.access);
         localStorage.setItem("refresh", res.refresh);
+        const userData = await fetch("http://127.0.0.1:8000/api/me/",{
 
-        const userData = await fetch("https://project-management-backend-yo7k.onrender.com/api/me/", {
+       
           headers: {
             Authorization: `Bearer ${res.access}`,
           },

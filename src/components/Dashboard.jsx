@@ -1044,24 +1044,32 @@ const deleteMember = async (id) => {
 
       {/* SPRINT LIST */}
       <div className="sprint-list">
-        {sprints.map(s => (
-          <div
-            key={s.id}
-            className={`sprint-card ${selectedSprint?.id === s.id ? "active" : ""}`}
-            onClick={() => setSelectedSprint(s)}
-          >
-            <h4>{s.name}</h4>
-            <p>{s.status}</p>
-            <small>{s.start_date} → {s.end_date}</small>
+        {sprints.map(s => {
+  const projectName = projects.find(p => p.id === s.project)?.name;
 
-            <button onClick={(e) => {
-              e.stopPropagation();
-              deleteSprint(s.id);
-            }}>
-              ✕
-            </button>
-          </div>
-        ))}
+  return (
+    <div
+      key={s.id}
+      className={`sprint-card ${selectedSprint?.id === s.id ? "active" : ""}`}
+      onClick={() => setSelectedSprint(s)}
+    >
+      <h4>{s.name}</h4>
+
+      {/* ✅ ADD THIS */}
+      <p><b>Project:</b> {projectName || "No Project"}</p>
+
+      <p>{s.status}</p>
+      <small>{s.start_date} → {s.end_date}</small>
+
+      <button onClick={(e) => {
+        e.stopPropagation();
+        deleteSprint(s.id);
+      }}>
+        ✕
+      </button>
+    </div>
+  );
+})}
       </div>
 
       {/* CREATE MEMBER */}
@@ -1449,8 +1457,8 @@ const normalizeStatus = (status) => {
 
 
 
-function CalendarView({ tasks = [] }) {
 
+function CalendarView({ tasks = [] }) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [sprints, setSprints] = useState([]);
 
@@ -1461,7 +1469,6 @@ function CalendarView({ tasks = [] }) {
   const fetchSprints = async () => {
     try {
       const res = await BASE_URL.get("sprints/");
-      console.log("SPRINTS:", res.data); // 🔥 DEBUG
       setSprints(res.data);
     } catch (err) {
       console.log(err);
@@ -1480,26 +1487,35 @@ function CalendarView({ tasks = [] }) {
   const nextMonth = () =>
     setCurrentDate(new Date(year, month + 1, 1));
 
-  // ✅ FIX: strict match
-  const getSprint = (id) => {
-    if (!id) return null;
-    return sprints.find(s => Number(s.id) === Number(id)) || null;
+  // ✅ SAFE SPRINT MATCH (FIXED)
+  const getSprint = (sprintValue) => {
+    if (!sprintValue) return null;
+
+    if (typeof sprintValue === "object") {
+      return sprintValue;
+    }
+
+    return sprints.find(
+      s => String(s.id) === String(sprintValue)
+    ) || null;
   };
 
+  // ✅ DATE FORMAT SAFE
   const formatDate = (date) => {
     if (!date) return "-";
-    return new Date(date).toLocaleDateString("en-IN", {
+    const d = new Date(date);
+    if (isNaN(d)) return "-";
+
+    return d.toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
     });
   };
 
-  // ✅ GROUP TASKS
+  // ✅ GROUP TASKS BY DATE
   const groupedTasks = {};
 
   tasks.forEach((t) => {
-    console.log("TASK DATA:", t); // 🔥 DEBUG
-
     const dateStr = t.due_date || t.created_at;
     if (!dateStr) return;
 
@@ -1514,12 +1530,14 @@ function CalendarView({ tasks = [] }) {
 
   const days = [];
 
-  // empty cells
+  // EMPTY CELLS
   for (let i = 0; i < firstDay; i++) {
-    days.push(<div key={"e" + i} className="calendar-cell empty"></div>);
+    days.push(
+      <div key={"e" + i} className="calendar-cell empty"></div>
+    );
   }
 
-  // actual days
+  // DAYS
   for (let d = 1; d <= daysInMonth; d++) {
     const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     const dayTasks = groupedTasks[key] || [];
@@ -1529,7 +1547,7 @@ function CalendarView({ tasks = [] }) {
         <div className="date">{d}</div>
 
         {dayTasks.length === 0 && (
-          <div style={{ fontSize: "10px", color: "#ccc" }}>
+          <div style={{ fontSize: "10px", color: "#aaa" }}>
             No tasks
           </div>
         )}
@@ -1540,25 +1558,25 @@ function CalendarView({ tasks = [] }) {
           return (
             <div key={t.id} className="task-pill">
 
-              {/* TASK */}
+              {/* TASK TITLE */}
               <strong>{t.title}</strong>
 
-              {/* 🔥 FORCE SHOW RAW SPRINT ID */}
+              {/* DEBUG (optional remove later) 
               <div style={{ fontSize: "10px", color: "red" }}>
-                Sprint ID: {t.sprint || "NULL"}
+                Sprint ID: {String(t.sprint)}
               </div>
 
-              {/* ✅ Sprint Name */}
+             
               <div style={{ fontSize: "11px", color: "blue" }}>
                 🏁 {sprint ? sprint.name : "No Sprint"}
               </div>
 
-              {/* ✅ Sprint Dates */}
+             
               <div style={{ fontSize: "10px" }}>
                 📅 {sprint
                   ? `${formatDate(sprint.start_date)} → ${formatDate(sprint.end_date)}`
                   : "No Dates"}
-              </div>
+              </div>*/}  
 
               {/* USER */}
               <div style={{ fontSize: "10px" }}>
@@ -1575,22 +1593,29 @@ function CalendarView({ tasks = [] }) {
   return (
     <div className="calendar-page">
 
+      {/* HEADER */}
       <div className="calendar-header">
         <button onClick={prevMonth}>{"<"}</button>
 
         <h3>
-          {currentDate.toLocaleString("default", { month: "long" })} {year}
+          {currentDate.toLocaleString("default", {
+            month: "long",
+          })}{" "}
+          {year}
         </h3>
 
         <button onClick={nextMonth}>{">"}</button>
       </div>
 
+      {/* WEEK HEADER */}
       <div className="calendar-grid header">
         <div>Sun</div><div>Mon</div><div>Tue</div>
         <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
       </div>
 
+      {/* CALENDAR BODY */}
       <div className="calendar-grid">{days}</div>
     </div>
   );
 }
+

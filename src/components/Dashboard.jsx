@@ -16,30 +16,27 @@ export default function Dashboard() {
 const [tasks, setTasks] = useState([]);
 const fetchAllData = async () => {
   try {
-    const [dashRes, taskRes, projectRes, sprintRes, memberRes] =
-      await Promise.all([
-        BASE_URL.get("dashboard/"),
-        BASE_URL.get("tasks/"),
-        BASE_URL.get("projects/"),
-        BASE_URL.get("sprints/"),
-        BASE_URL.get("members/")
-      ]);
-
+    const dashRes = await BASE_URL.get("dashboard/");
     setDashboard(dashRes.data);
-    setTasks(taskRes.data);
-    setProjects(projectRes.data);
-    setSprints(sprintRes.data);
-    setMembers(memberRes.data);
 
-    // optional default sprint selection
-    if (sprintRes.data.length > 0) {
-      setSelectedSprint(sprintRes.data[0]);
-    }
+    const taskRes = await BASE_URL.get("tasks/");
+    setTasks(taskRes.data);
+
+    const projectRes = await BASE_URL.get("projects/");
+    setProjects(projectRes.data);
+
+    const sprintRes = await BASE_URL.get("sprints/");
+    setSprints(sprintRes.data);
+
+    const memberRes = await BASE_URL.get("members/");
+    setMembers(memberRes.data);
 
   } catch (err) {
     console.log(err);
   }
 };
+  const [sprints, setSprints] = useState([]);
+const [members, setMembers] = useState([]);
  const [projects, setProjects] = useState([]);
 
   const [showModal, setShowModal] = useState(false);

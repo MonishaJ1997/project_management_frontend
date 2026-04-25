@@ -3,7 +3,7 @@
 import axios from "axios";
 
 const BASE_URL = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: "https://project-management-backend-yo7k.onrender.com/api/",
 });
 
 // ✅ REQUEST: attach token
@@ -31,7 +31,7 @@ BASE_URL.interceptors.response.use(
         const refresh = localStorage.getItem("refresh");
 
         const res = await axios.post(
-          "http://127.0.0.1:8000/api/token/refresh/",
+          "https://project-management-backend-yo7k.onrender.com/api/token/refresh/",
           { refresh }
         );
 
